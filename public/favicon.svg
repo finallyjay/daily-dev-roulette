@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="13" fill="#1a120b"/>
+  <circle cx="32" cy="32" r="22" fill="#34343a" stroke="#e0b85a" stroke-width="4"/>
+  <!-- chambers -->
+  <circle cx="32" cy="19" r="4" fill="#e0b85a"/>            <!-- live round -->
+  <circle cx="43.3" cy="25.5" r="3.5" fill="#0c0c0e"/>
+  <circle cx="43.3" cy="38.5" r="3.5" fill="#0c0c0e"/>
+  <circle cx="32" cy="45" r="3.5" fill="#0c0c0e"/>
+  <circle cx="20.7" cy="38.5" r="3.5" fill="#0c0c0e"/>
+  <circle cx="20.7" cy="25.5" r="3.5" fill="#0c0c0e"/>
+  <!-- hub -->
+  <circle cx="32" cy="32" r="6" fill="#c9c9d0"/>
+  <circle cx="32" cy="32" r="3" fill="#bb8a32"/>
+</svg>
