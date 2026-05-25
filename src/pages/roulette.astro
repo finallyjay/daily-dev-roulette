@@ -1,0 +1,258 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { currentUser } from "../lib/auth";
+import { MOCK_BOOKMARKS } from "../lib/mock";
+
+const isDemo = Astro.url.searchParams.get("demo") === "1";
+const profile = await currentUser(Astro.cookies);
+
+// Real mode requires a session. Demo mode is open to anyone.
+if (!isDemo && !profile) {
+  return Astro.redirect("/");
+}
+
+const mode = isDemo ? "demo" : "real";
+const mockJson = JSON.stringify(MOCK_BOOKMARKS);
+---
+
+<Layout title="Bookmark Roulette" profile={profile}>
+  <h1>🎲 The Chamber</h1>
+  <p class="tagline">
+    {isDemo ? "Demo mode — no real bookmarks were harmed." : "Live mode — the trigger is real."}
+  </p>
+
+  <section class="panel">
+    <div class="stats" style="display:flex; gap:1.5rem; justify-content:center; margin-bottom:1.5rem; color:var(--muted);">
+      <div>chamber<b id="stat-chamber" style="color:var(--text); font-size:1.4rem; display:block;">0</b></div>
+      <div>🪦 killed<b id="stat-killed" style="color:var(--text); font-size:1.4rem; display:block;">0</b></div>
+      <div>📖 survived<b id="stat-survived" style="color:var(--text); font-size:1.4rem; display:block;">0</b></div>
+    </div>
+
+    <div class="chamber" id="chamber" style="font-size:3rem; text-align:center; letter-spacing:0.3rem; margin:1rem 0; min-height:3.5rem;">🔫</div>
+
+    <p id="loading" class="card-meta" style="text-align:center;">Loading your bookmarks…</p>
+
+    <div id="verdict" class="hidden">
+      <div class="card-source" id="card-source" style="color:var(--gold); font-size:0.85rem;"></div>
+      <div class="card-title" id="card-title" style="font-size:1.3rem; margin:0.2rem 0;"></div>
+      <div class="card-summary" id="card-summary"></div>
+      <div class="card-meta" id="card-meta"></div>
+      <div class="row">
+        <button class="btn-read" id="read">📖 Read it (spare)</button>
+        <button class="btn-kill" id="kill">🔫 Pull trigger</button>
+      </div>
+      <p class="verdict-msg" id="verdict-msg" style="text-align:center; min-height:1.4rem; margin-top:0.5rem;"></p>
+    </div>
+
+    <button class="btn-primary hidden" id="spin">🎰 SPIN</button>
+
+    <div id="over" class="hidden" style="text-align:center;">
+      <h2>Chamber empty.</h2>
+      <p class="card-summary">You faced <b id="over-total">0</b> bookmarks.<br/>🪦 <b id="over-killed">0</b> executed · 📖 <b id="over-survived">0</b> spared.</p>
+      <button class="btn-primary" id="restart">Play again</button>
+    </div>
+
+    <p style="text-align:center; margin-top:1.5rem;"><a href="/">← Back to home</a></p>
+  </section>
+</Layout>
+
+<script define:vars={{ mode, mockJson }}>
+  const MOCK = JSON.parse(mockJson);
+  const STORAGE_KEY = "ddr_progress";
+
+  const state = { mode, chamber: [], killed: 0, survived: 0, total: 0, current: null };
+
+  const $ = (id) => document.getElementById(id);
+  const show = (el) => el.classList.remove("hidden");
+  const hide = (el) => el.classList.add("hidden");
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        mode: state.mode, chamber: state.chamber, current: state.current,
+        killed: state.killed, survived: state.survived, total: state.total,
+      }));
+    } catch {}
+  }
+  function clearState() { try { localStorage.removeItem(STORAGE_KEY); } catch {} }
+  function loadState() {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      // Only resume if it matches the mode we're playing right now.
+      return s && Array.isArray(s.chamber) && s.mode === state.mode ? s : null;
+    } catch { return null; }
+  }
+
+  function renderStats() {
+    $("stat-chamber").textContent = state.chamber.length;
+    $("stat-killed").textContent = state.killed;
+    $("stat-survived").textContent = state.survived;
+  }
+
+  function renderCard(b) {
+    $("card-source").textContent = b.source?.name || "unknown source";
+    $("card-title").textContent = b.title || b.url || "Untitled bookmark";
+    $("card-summary").textContent = b.summary || "";
+    const when = b.bookmarkedAt ? new Date(b.bookmarkedAt).toLocaleDateString() : "";
+    $("card-meta").textContent = [b.readTime ? `${b.readTime} min read` : "", when ? `bookmarked ${when}` : ""].filter(Boolean).join(" · ");
+  }
+
+  function startGame(bookmarks) {
+    state.chamber = bookmarks.slice();
+    state.killed = 0;
+    state.survived = 0;
+    state.total = bookmarks.length;
+    state.current = null;
+    hide($("over"));
+    if (state.chamber.length === 0) return gameOver();
+    hide($("verdict"));
+    show($("spin"));
+    $("chamber").textContent = "🔫";
+    renderStats();
+    saveState();
+  }
+
+  function resumeGame(s) {
+    state.chamber = s.chamber;
+    state.killed = s.killed;
+    state.survived = s.survived;
+    state.total = s.total;
+    state.current = s.current || null;
+    if (state.chamber.length === 0) return gameOver();
+    renderStats();
+    if (state.current) {
+      renderCard(state.current);
+      $("verdict-msg").textContent = "";
+      $("chamber").textContent = "🎯";
+      show($("verdict"));
+      hide($("spin"));
+    } else {
+      hide($("verdict"));
+      show($("spin"));
+      $("chamber").textContent = "🔫";
+    }
+  }
+
+  function spin() {
+    if (state.chamber.length === 0) return gameOver();
+    hide($("spin"));
+    hide($("verdict"));
+    const chamber = $("chamber");
+    chamber.classList.add("spinning");
+    chamber.textContent = "🎰";
+    setTimeout(() => {
+      chamber.classList.remove("spinning");
+      const idx = Math.floor(Math.random() * state.chamber.length);
+      state.current = state.chamber[idx];
+      chamber.textContent = "🎯";
+      renderCard(state.current);
+      $("verdict-msg").textContent = "";
+      show($("verdict"));
+      saveState();
+    }, 1100);
+  }
+
+  function removeCurrent() {
+    state.chamber = state.chamber.filter((x) => x.id !== state.current.id);
+  }
+
+  function read() {
+    if (!state.current) return;
+    window.open(state.current.url, "_blank", "noopener");
+    removeCurrent();
+    state.survived++;
+    afterVerdict("📖 Spared. Go actually read it.");
+  }
+
+  async function kill() {
+    if (!state.current) return;
+    const b = state.current;
+    if (state.mode === "real") {
+      $("kill").disabled = true;
+      try {
+        const res = await fetch(`/api/bookmarks/${b.id}`, { method: "DELETE" });
+        if (!res.ok && res.status !== 204) {
+          const detail = await res.json().catch(() => ({}));
+          throw new Error(detail.error || res.status);
+        }
+      } catch (e) {
+        $("verdict-msg").textContent = "⚠️ " + String(e.message || e);
+        $("kill").disabled = false;
+        return;
+      }
+      $("kill").disabled = false;
+    }
+    removeCurrent();
+    state.killed++;
+    afterVerdict(`🪦 "${(b.title || "this one").slice(0, 40)}" is gone forever.`);
+  }
+
+  function afterVerdict(msg) {
+    renderStats();
+    state.current = null;
+    saveState();
+    $("verdict-msg").textContent = msg;
+    $("chamber").textContent = state.chamber.length ? "🔫" : "💨";
+    setTimeout(() => {
+      hide($("verdict"));
+      if (state.chamber.length === 0) gameOver();
+      else show($("spin"));
+    }, 1400);
+  }
+
+  function gameOver() {
+    clearState();
+    hide($("verdict"));
+    hide($("spin"));
+    $("over-total").textContent = state.total;
+    $("over-killed").textContent = state.killed;
+    $("over-survived").textContent = state.survived;
+    show($("over"));
+  }
+
+  // Fetch the user's real bookmarks (all pages).
+  async function fetchReal() {
+    const res = await fetch("/api/bookmarks");
+    if (!res.ok) throw new Error("Could not load your bookmarks. Try signing in again.");
+    return (await res.json()).items ?? [];
+  }
+
+  $("spin").addEventListener("click", spin);
+  $("read").addEventListener("click", read);
+  $("kill").addEventListener("click", kill);
+  $("restart").addEventListener("click", async () => {
+    if (state.mode === "demo") return startGame(MOCK);
+    hide($("over"));
+    show($("loading"));
+    try { startGame(await fetchReal()); } finally { hide($("loading")); }
+  });
+
+  // --- init ---
+  (async () => {
+    const saved = loadState();
+    if (saved) {
+      // A refresh mid-game: resume exactly where we were.
+      hide($("loading"));
+      resumeGame(saved);
+      return;
+    }
+    // Fresh start (incl. right after login): sync with reality.
+    if (state.mode === "demo") {
+      hide($("loading"));
+      startGame(MOCK);
+    } else {
+      try {
+        startGame(await fetchReal());
+      } catch (e) {
+        $("loading").textContent = "⚠️ " + String(e.message || e);
+        return;
+      }
+      hide($("loading"));
+    }
+  })();
+</script>
+
+<style>
+  .spinning { animation: shake 0.4s linear infinite; }
+  @keyframes shake { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+</style>

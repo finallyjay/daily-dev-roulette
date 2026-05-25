@@ -1,0 +1,154 @@
+---
+import type { Profile } from "../lib/daily";
+
+interface Props {
+  title?: string;
+  profile?: Profile | null;
+}
+const { title = "Bookmark Roulette", profile = null } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <style is:global>
+      :root {
+        --bg: #0d0d10;
+        --panel: #16161c;
+        --accent: #e63946;
+        --gold: #e9c46a;
+        --text: #f1f1f1;
+        --muted: #8a8a94;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        background: radial-gradient(circle at 50% -10%, #1c1c24, var(--bg));
+        color: var(--text);
+        min-height: 100vh;
+      }
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem 4rem;
+      }
+      h1 { font-size: clamp(1.8rem, 5vw, 3rem); margin: 0.2em 0 0; letter-spacing: -1px; text-align: center; }
+      h2 { margin: 0.2em 0; }
+      .tagline { color: var(--muted); margin: 0.3rem 0 2rem; text-align: center; }
+      .panel {
+        background: var(--panel);
+        border: 1px solid #26262f;
+        border-radius: 14px;
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 560px;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+        border: none;
+        border-radius: 10px;
+        padding: 0.8rem 1.2rem;
+        font-weight: 600;
+        transition: transform 0.08s ease, opacity 0.2s;
+      }
+      button:active { transform: translateY(1px); }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-primary { background: var(--gold); color: #1a1a1a; width: 100%; }
+      .btn-read { background: #2a9d8f; color: #fff; flex: 1; }
+      .btn-kill { background: var(--accent); color: #fff; flex: 1; }
+      .btn-ghost { background: transparent; color: var(--muted); border: 1px solid #33333d; }
+      input {
+        font: inherit;
+        width: 100%;
+        padding: 0.8rem;
+        border-radius: 10px;
+        border: 1px solid #33333d;
+        background: #0e0e12;
+        color: var(--text);
+        margin-bottom: 0.8rem;
+      }
+      a { color: var(--gold); }
+      .hidden { display: none !important; }
+      .row { display: flex; gap: 0.8rem; margin-top: 1rem; }
+      .error { color: var(--accent); font-size: 0.85rem; min-height: 1.2rem; }
+      .card-meta { color: var(--muted); font-size: 0.8rem; }
+      .card-summary { color: var(--muted); margin: 0.8rem 0; }
+
+      /* header */
+      header.topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.9rem 1.2rem;
+        border-bottom: 1px solid #22222a;
+        background: rgba(13, 13, 16, 0.6);
+        backdrop-filter: blur(6px);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .brand { color: var(--text); text-decoration: none; font-weight: 700; letter-spacing: -0.5px; }
+      .user { display: flex; align-items: center; gap: 0.7rem; }
+      .user .avatar { position: relative; width: 32px; height: 32px; display: inline-block; }
+      .user .avatar img { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #33333d; object-fit: cover; display: block; }
+      .user .avatar-fallback {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: var(--gold); color: #1a1a1a;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.9rem;
+      }
+      .user .uname { font-size: 0.9rem; }
+      .user .muted { color: var(--muted); font-size: 0.85rem; }
+      .signout { background: transparent; color: var(--muted); border: 1px solid #33333d; padding: 0.4rem 0.7rem; font-size: 0.85rem; }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a href="/" class="brand">🎲 Bookmark Roulette</a>
+      <div class="user">
+        {profile ? (
+          <>
+            <span class="avatar">
+              {profile.image && (
+                <img src={profile.image} alt="" referrerpolicy="no-referrer" id="avatar-img" />
+              )}
+              <span class="avatar-fallback" id="avatar-fallback" class:list={[{ hidden: !!profile.image }]}>
+                {(profile.name || profile.username || "?").charAt(0).toUpperCase()}
+              </span>
+            </span>
+            <span class="uname">{profile.name || profile.username || "you"}</span>
+            <button class="signout" id="signout-btn">Sign out</button>
+          </>
+        ) : (
+          <span class="muted">not signed in</span>
+        )}
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+
+    <script>
+      // If the avatar image fails to load, fall back to the initial.
+      const avatarImg = document.getElementById("avatar-img");
+      avatarImg?.addEventListener("error", () => {
+        avatarImg.style.display = "none";
+        document.getElementById("avatar-fallback")?.classList.remove("hidden");
+      });
+
+      // Sign out: clear the cookie session + local game progress, then go home.
+      const btn = document.getElementById("signout-btn");
+      btn?.addEventListener("click", async () => {
+        await fetch("/api/auth", { method: "DELETE" });
+        try { localStorage.removeItem("ddr_progress"); } catch {}
+        window.location.href = "/";
+      });
+    </script>
+  </body>
+</html>

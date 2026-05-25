@@ -1,0 +1,78 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { currentUser } from "../lib/auth";
+
+const profile = await currentUser(Astro.cookies);
+---
+
+<Layout title="Bookmark Roulette — read it or it dies" profile={profile}>
+  <h1>🎲 Bookmark Roulette</h1>
+  <p class="tagline">Your daily.dev bookmarks pile up and rot. Time to face them.</p>
+
+  {profile ? (
+    <!-- LOGGED IN -->
+    <section class="panel" style="text-align:center;">
+      <h2>Welcome back, {profile.name || profile.username || "you"}.</h2>
+      <p class="card-summary">
+        You have <b id="bm-count">…</b> bookmarks loaded and waiting in the chamber.
+      </p>
+      <a href="/roulette" style="text-decoration:none;">
+        <button class="btn-primary" style="margin-bottom:0.8rem;">🎰 Enter the Roulette</button>
+      </a>
+      <a href="/roulette?demo=1" style="text-decoration:none;">
+        <button class="btn-ghost" style="width:100%;">Try the demo instead</button>
+      </a>
+    </section>
+  ) : (
+    <!-- LOGGED OUT -->
+    <section class="panel">
+      <p>Spin to get a random bookmark. <b>Read it</b> to keep it, or <b>pull the trigger</b> to delete it forever. Clear out the pile, one shot at a time.</p>
+
+      <h2 style="margin-top:1.5rem;">Sign in</h2>
+      <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, needs a Plus subscription). It stays private — only in a secure cookie for your session.</p>
+
+      <input type="password" id="token" placeholder="Paste your daily.dev API token" autocomplete="off" />
+      <button class="btn-primary" id="signin">Sign in</button>
+      <p class="error" id="login-error"></p>
+
+      <a href="/roulette?demo=1" style="text-decoration:none;">
+        <button class="btn-ghost" style="width:100%; margin-top:1.5rem;">▶ Or just try the demo</button>
+      </a>
+    </section>
+  )}
+</Layout>
+
+<script>
+  // --- logged-out: sign in ---
+  const signin = document.getElementById("signin");
+  signin?.addEventListener("click", async () => {
+    const token = (document.getElementById("token") as HTMLInputElement).value.trim();
+    const err = document.getElementById("login-error")!;
+    err.textContent = "";
+    if (!token) { err.textContent = "Paste a token first."; return; }
+    (signin as HTMLButtonElement).disabled = true;
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Sign-in failed");
+      // Fresh login -> drop any stale game so the roulette re-syncs with reality.
+      try { localStorage.removeItem("ddr_progress"); } catch {}
+      window.location.href = "/";
+    } catch (e: any) {
+      err.textContent = String(e.message || e);
+      (signin as HTMLButtonElement).disabled = false;
+    }
+  });
+
+  // --- logged-in: show live bookmark count ---
+  const countEl = document.getElementById("bm-count");
+  if (countEl) {
+    fetch("/api/bookmarks")
+      .then((r) => r.json())
+      .then((d) => { countEl.textContent = String(d.items?.length ?? 0); })
+      .catch(() => { countEl.textContent = "?"; });
+  }
+</script>
