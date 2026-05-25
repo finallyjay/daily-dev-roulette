@@ -5,7 +5,7 @@ interface Props {
   title?: string;
   profile?: Profile | null;
 }
-const { title = "Bookmark Roulette", profile = null } = Astro.props;
+const { title = "Daily Dev Roulette", profile = null } = Astro.props;
 ---
 
 <!doctype html>
@@ -110,7 +110,7 @@ const { title = "Bookmark Roulette", profile = null } = Astro.props;
   </head>
   <body>
     <header class="topbar">
-      <a href="/" class="brand">🎲 Bookmark Roulette</a>
+      <a href="/" class="brand">🎲 Daily Dev Roulette</a>
       <div class="user">
         {profile ? (
           <>

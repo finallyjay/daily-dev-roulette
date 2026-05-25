@@ -5,41 +5,54 @@ import { currentUser } from "../lib/auth";
 const profile = await currentUser(Astro.cookies);
 ---
 
-<Layout title="Bookmark Roulette — read it or it dies" profile={profile}>
-  <h1>🎲 Bookmark Roulette</h1>
-  <p class="tagline">Your daily.dev bookmarks pile up and rot. Time to face them.</p>
+<Layout title="Daily Dev Roulette" profile={profile}>
+  <h1>🎲 Daily Dev Roulette</h1>
+  <p class="tagline">Put your daily.dev habits on the line. One spin at a time.</p>
 
-  {profile ? (
-    <!-- LOGGED IN -->
-    <section class="panel" style="text-align:center;">
-      <h2>Welcome back, {profile.name || profile.username || "you"}.</h2>
-      <p class="card-summary">
-        You have <b id="bm-count">…</b> bookmarks loaded and waiting in the chamber.
-      </p>
-      <a href="/roulette" style="text-decoration:none;">
-        <button class="btn-primary" style="margin-bottom:0.8rem;">🎰 Enter the Roulette</button>
-      </a>
-      <a href="/roulette?demo=1" style="text-decoration:none;">
-        <button class="btn-ghost" style="width:100%;">Try the demo instead</button>
-      </a>
-    </section>
-  ) : (
-    <!-- LOGGED OUT -->
-    <section class="panel">
-      <p>Spin to get a random bookmark. <b>Read it</b> to keep it, or <b>pull the trigger</b> to delete it forever. Clear out the pile, one shot at a time.</p>
-
-      <h2 style="margin-top:1.5rem;">Sign in</h2>
-      <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, needs a Plus subscription). It stays private — only in a secure cookie for your session.</p>
-
+  {!profile && (
+    <!-- SIGN IN (logged out) -->
+    <section class="panel" style="margin-bottom:1.5rem;">
+      <h2>Sign in</h2>
+      <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, needs a Plus subscription) to play with your real data. It stays private — only in a secure cookie for your session.</p>
       <input type="password" id="token" placeholder="Paste your daily.dev API token" autocomplete="off" />
       <button class="btn-primary" id="signin">Sign in</button>
       <p class="error" id="login-error"></p>
-
-      <a href="/roulette?demo=1" style="text-decoration:none;">
-        <button class="btn-ghost" style="width:100%; margin-top:1.5rem;">▶ Or just try the demo</button>
-      </a>
     </section>
   )}
+
+  {profile && (
+    <p class="tagline" style="margin-top:-1rem;">Welcome back, {profile.name || profile.username || "you"}.</p>
+  )}
+
+  <!-- MODES -->
+  <section class="panel">
+    <h2 style="margin-bottom:1rem;">Pick your roulette</h2>
+
+    <div class="mode-card">
+      <div class="mode-head">
+        <span class="mode-icon">🔖</span>
+        <div>
+          <div class="mode-title">Bookmarks Roulette</div>
+          <div class="card-meta">Spin a bookmark. Read it, or delete it forever.</div>
+        </div>
+      </div>
+      {profile ? (
+        <p class="card-meta">You have <b id="bm-count">…</b> bookmarks in the chamber.</p>
+      ) : null}
+      <div class="row" style="margin-top:0.8rem;">
+        {profile && (
+          <a href="/roulette" style="flex:1; text-decoration:none;">
+            <button class="btn-primary">🎰 Play</button>
+          </a>
+        )}
+        <a href="/roulette?demo=1" style="flex:1; text-decoration:none;">
+          <button class="btn-ghost" style="width:100%;">▶ Demo</button>
+        </a>
+      </div>
+    </div>
+
+    <p class="card-meta" style="text-align:center; margin-top:1.2rem; opacity:0.7;">More roulettes coming soon…</p>
+  </section>
 </Layout>
 
 <script>
@@ -76,3 +89,15 @@ const profile = await currentUser(Astro.cookies);
       .catch(() => { countEl.textContent = "?"; });
   }
 </script>
+
+<style>
+  .mode-card {
+    border: 1px solid #2c2c36;
+    border-radius: 12px;
+    padding: 1.2rem;
+    background: #12121a;
+  }
+  .mode-head { display: flex; gap: 0.9rem; align-items: center; }
+  .mode-icon { font-size: 2rem; }
+  .mode-title { font-size: 1.2rem; font-weight: 700; }
+</style>
