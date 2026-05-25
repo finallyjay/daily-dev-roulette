@@ -32,7 +32,7 @@ const ogHtml = `<!doctype html><html><head><meta charset="utf-8"/>
   <div class="grain"></div><div class="vig"></div>
   <div class="kicker">★ ★ ★&nbsp;&nbsp;WANTED&nbsp;&nbsp;★ ★ ★</div>
   <div class="cyl">${cylinderSvg.replace('width="64" height="64"', 'width="150" height="150"')}</div>
-  <h1>Daily Dev Roulette</h1>
+  <h1>daily.dev Roulette</h1>
   <div class="sub">Read it&hellip; or <b>pull the trigger.</b></div>
 </body></html>`;
 

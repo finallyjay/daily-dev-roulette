@@ -5,10 +5,10 @@ import { currentUser } from "../lib/auth";
 const profile = await currentUser(Astro.cookies);
 ---
 
-<Layout title="Daily Dev Roulette" profile={profile}>
+<Layout title="daily.dev Roulette" profile={profile}>
   <div class="reveal r1" style="text-align:center;">
     <p class="kicker">★ ★ ★ &nbsp; THE TERRITORY OF &nbsp; ★ ★ ★</p>
-    <h1>Daily Dev Roulette</h1>
+    <h1>daily.dev Roulette</h1>
     <p class="tagline">Round up your forgotten bookmarks. Read 'em or bury 'em.</p>
   </div>
 

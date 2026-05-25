@@ -7,7 +7,7 @@ interface Props {
   profile?: Profile | null;
 }
 const {
-  title = "Daily Dev Roulette",
+  title = "daily.dev Roulette",
   description = "Spin the cylinder on your forgotten daily.dev bookmarks — read it, or pull the trigger and delete it forever. A darkly funny way to clear your backlog.",
   profile = null,
 } = Astro.props;
@@ -33,7 +33,7 @@ const ogImage = new URL("/og-image.png", Astro.url.origin).href;
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Daily Dev Roulette" />
+    <meta property="og:site_name" content="daily.dev Roulette" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -254,7 +254,7 @@ const ogImage = new URL("/og-image.png", Astro.url.origin).href;
   </head>
   <body>
     <header class="topbar">
-      <a href="/" class="brand">🎲 Daily Dev Roulette</a>
+      <a href="/" class="brand">🎲 daily.dev Roulette</a>
       <div class="user">
         {profile ? (
           <>

@@ -1,4 +1,4 @@
-# 🎲 Daily Dev Roulette
+# 🎲 daily.dev Roulette
 
 A daily.dev hackathon project. Put your daily.dev habits on the line, one spin at a time. It's built as a hub of "roulette" modes — the first (and currently only) mode is **Bookmarks Roulette**, with room to add more.
 
