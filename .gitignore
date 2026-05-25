@@ -11,5 +11,12 @@ node_modules/
 .env.local
 .env.*.local
 
+# agent / editor tooling (installed skills, local settings) — not app code
+.claude/
+skills-lock.json
+
+# debug screenshots from spike scripts
+spike/*.png
+
 # os
 .DS_Store

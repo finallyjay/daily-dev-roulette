@@ -6,7 +6,6 @@ import { MOCK_BOOKMARKS } from "../lib/mock";
 const isDemo = Astro.url.searchParams.get("demo") === "1";
 const profile = await currentUser(Astro.cookies);
 
-// Real mode requires a session. Demo mode is open to anyone.
 if (!isDemo && !profile) {
   return Astro.redirect("/");
 }
@@ -16,43 +15,63 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
 ---
 
 <Layout title="Bookmarks Roulette · Daily Dev Roulette" profile={profile}>
-  <h1>🔖 Bookmarks Roulette</h1>
+  <h1>Bookmarks Roulette</h1>
   <p class="tagline">
-    {isDemo ? "Demo mode — no real bookmarks were harmed." : "Live mode — the trigger is real."}
+    {isDemo ? "Demo town — no real bookmarks were harmed." : "Real bookmarks, real bullets. No do-overs."}
   </p>
 
-  <section class="panel">
-    <div class="stats" style="display:flex; gap:1.5rem; justify-content:center; margin-bottom:1.5rem; color:var(--muted);">
-      <div>chamber<b id="stat-chamber" style="color:var(--text); font-size:1.4rem; display:block;">0</b></div>
-      <div>🪦 killed<b id="stat-killed" style="color:var(--text); font-size:1.4rem; display:block;">0</b></div>
-      <div>📖 survived<b id="stat-survived" style="color:var(--text); font-size:1.4rem; display:block;">0</b></div>
+  <section class="stage" id="stage">
+    <button class="mute" id="mute" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+    <div class="stats">
+      <div>in chamber<b id="stat-chamber">0</b></div>
+      <div>🪦 buried<b id="stat-killed">0</b></div>
+      <div>📖 pardoned<b id="stat-survived">0</b></div>
     </div>
 
-    <div class="chamber" id="chamber" style="font-size:3rem; text-align:center; letter-spacing:0.3rem; margin:1rem 0; min-height:3.5rem;">🔫</div>
+    <div class="cylinder-wrap" id="cylinder-wrap">
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <div class="hammer" id="hammer"></div>
+      <div class="flash" id="flash"></div>
+      <span class="firing-ring"></span>
+      <span class="round" id="round"></span>
+      <div class="cylinder" id="cylinder">
+        <span class="hole" style="--i:0"></span>
+        <span class="hole" style="--i:1"></span>
+        <span class="hole" style="--i:2"></span>
+        <span class="hole" style="--i:3"></span>
+        <span class="hole" style="--i:4"></span>
+        <span class="hole" style="--i:5"></span>
+        <span class="hub"></span>
+      </div>
+    </div>
 
-    <p id="loading" class="card-meta" style="text-align:center;">Loading your bookmarks…</p>
+    <p id="loading" class="hint">Rounding up your bookmarks…</p>
 
     <div id="verdict" class="hidden">
-      <div class="card-source" id="card-source" style="color:var(--gold); font-size:0.85rem;"></div>
-      <div class="card-title" id="card-title" style="font-size:1.3rem; margin:0.2rem 0;"></div>
-      <div class="card-summary" id="card-summary"></div>
-      <div class="card-meta" id="card-meta"></div>
-      <div class="row">
-        <button class="btn-read" id="read">📖 Read it (spare)</button>
-        <button class="btn-kill" id="kill">🔫 Pull trigger</button>
+      <div class="poster" id="poster">
+        <div class="poster-top">WANTED</div>
+        <div class="poster-rule">— dead or read —</div>
+        <div class="card-source" id="card-source"></div>
+        <div class="card-title" id="card-title"></div>
+        <div class="card-summary" id="card-summary"></div>
+        <div class="card-meta" id="card-meta"></div>
       </div>
-      <p class="verdict-msg" id="verdict-msg" style="text-align:center; min-height:1.4rem; margin-top:0.5rem;"></p>
+      <div class="row">
+        <button class="btn-read" id="read">📖 Spare it</button>
+        <button class="btn-kill" id="kill">🔫 Pull the trigger</button>
+      </div>
+      <p class="verdict-msg" id="verdict-msg"></p>
     </div>
 
-    <button class="btn-primary hidden" id="spin">🎰 SPIN</button>
+    <button class="btn-primary hidden" id="spin">🤠 Spin the cylinder</button>
 
     <div id="over" class="hidden" style="text-align:center;">
-      <h2>Chamber empty.</h2>
-      <p class="card-summary">You faced <b id="over-total">0</b> bookmarks.<br/>🪦 <b id="over-killed">0</b> executed · 📖 <b id="over-survived">0</b> spared.</p>
-      <button class="btn-primary" id="restart">Play again</button>
+      <h2 style="color:var(--brass-hi);">The dust settles.</h2>
+      <p>You faced <b id="over-total">0</b> outlaws.<br/>🪦 <b id="over-killed">0</b> buried · 📖 <b id="over-survived">0</b> pardoned.</p>
+      <button class="btn-primary" id="restart">Reload &amp; ride again</button>
     </div>
 
-    <p style="text-align:center; margin-top:1.5rem;"><a href="/">← Back to home</a></p>
+    <p style="text-align:center; margin-top:1.5rem;"><a href="/" class="back">← Back to town</a></p>
   </section>
 </Layout>
 
@@ -61,6 +80,7 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
   const STORAGE_KEY = "ddr_progress";
 
   const state = { mode, chamber: [], killed: 0, survived: 0, total: 0, current: null };
+  let cylRotation = 0;
 
   const $ = (id) => document.getElementById(id);
   const show = (el) => el.classList.remove("hidden");
@@ -78,7 +98,6 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
   function loadState() {
     try {
       const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-      // Only resume if it matches the mode we're playing right now.
       return s && Array.isArray(s.chamber) && s.mode === state.mode ? s : null;
     } catch { return null; }
   }
@@ -90,11 +109,80 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
   }
 
   function renderCard(b) {
-    $("card-source").textContent = b.source?.name || "unknown source";
+    $("card-source").textContent = "alias: " + (b.source?.name || "unknown");
     $("card-title").textContent = b.title || b.url || "Untitled bookmark";
     $("card-summary").textContent = b.summary || "";
     const when = b.bookmarkedAt ? new Date(b.bookmarkedAt).toLocaleDateString() : "";
     $("card-meta").textContent = [b.readTime ? `${b.readTime} min read` : "", when ? `bookmarked ${when}` : ""].filter(Boolean).join(" · ");
+  }
+
+  // Re-trigger an entrance animation each time the poster appears.
+  function slam(el) { el.classList.remove("slam-in"); void el.offsetWidth; el.classList.add("slam-in"); }
+
+  // Friendly toast that pops above the gun. kind: "spare" | "miss" | "kill".
+  let toastTimer;
+  function showToast(msg, kind) {
+    const t = $("toast");
+    t.className = "toast";
+    t.textContent = msg;
+    void t.offsetWidth;
+    t.classList.add("show");
+    if (kind) t.classList.add("toast--" + kind);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2900);
+  }
+
+  // --- synthesized sound (Web Audio, no asset files) ---
+  let muted = false;
+  try { muted = localStorage.getItem("ddr_muted") === "1"; } catch {}
+  let audioCtx;
+  function ac() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    audioCtx?.resume?.();
+    return audioCtx;
+  }
+  // a short mechanical tick
+  function tick(ctx, t, freq, gain) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "square"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(gain, t + 0.001);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+    o.connect(g).connect(ctx.destination);
+    o.start(t); o.stop(t + 0.06);
+  }
+  function playSpin() {
+    if (muted) return; const ctx = ac(); if (!ctx) return;
+    const t0 = ctx.currentTime;
+    let t = t0, gap = 0.028;            // ratchet that decelerates with the cylinder
+    while (t < t0 + 2.0) { tick(ctx, t, 1500, 0.16); t += gap; gap *= 1.13; }
+  }
+  function playClick() {
+    if (muted) return; const ctx = ac(); if (!ctx) return;
+    const t = ctx.currentTime;
+    tick(ctx, t, 900, 0.5);
+    tick(ctx, t + 0.05, 600, 0.3);
+  }
+  function playBang() {
+    if (muted) return; const ctx = ac(); if (!ctx) return;
+    const t = ctx.currentTime, dur = 0.4;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.setValueAtTime(2200, t);
+    lp.frequency.exponentialRampToValueAtTime(200, t + 0.3);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.connect(lp).connect(g).connect(ctx.destination); src.start(t);
+    const o = ctx.createOscillator(), og = ctx.createGain(); // low thump
+    o.type = "sine"; o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.2);
+    og.gain.setValueAtTime(0.7, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+    o.connect(og).connect(ctx.destination); o.start(t); o.stop(t + 0.3);
   }
 
   function startGame(bookmarks) {
@@ -107,7 +195,6 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
     if (state.chamber.length === 0) return gameOver();
     hide($("verdict"));
     show($("spin"));
-    $("chamber").textContent = "🔫";
     renderStats();
     saveState();
   }
@@ -123,13 +210,14 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
     if (state.current) {
       renderCard(state.current);
       $("verdict-msg").textContent = "";
-      $("chamber").textContent = "🎯";
+      $("read").disabled = false;
+      $("kill").disabled = false;
       show($("verdict"));
+      slam($("poster"));
       hide($("spin"));
     } else {
       hide($("verdict"));
       show($("spin"));
-      $("chamber").textContent = "🔫";
     }
   }
 
@@ -137,38 +225,73 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
     if (state.chamber.length === 0) return gameOver();
     hide($("spin"));
     hide($("verdict"));
-    const chamber = $("chamber");
-    chamber.classList.add("spinning");
-    chamber.textContent = "🎰";
+    $("round").classList.remove("show");
+    playSpin();
+    const cyl = $("cylinder");
+    cyl.classList.add("spinning");
+    // Snap to a whole chamber so the hammer always lands ON a chamber, not between two.
+    cylRotation += 1440 + Math.floor(Math.random() * CHAMBERS) * (360 / CHAMBERS);
+    cyl.style.transform = `rotate(${cylRotation}deg)`;
     setTimeout(() => {
-      chamber.classList.remove("spinning");
+      cyl.classList.remove("spinning");
       const idx = Math.floor(Math.random() * state.chamber.length);
       state.current = state.chamber[idx];
-      chamber.textContent = "🎯";
       renderCard(state.current);
       $("verdict-msg").textContent = "";
+      $("read").disabled = false;
+      $("kill").disabled = false;
       show($("verdict"));
+      slam($("poster"));
       saveState();
-    }, 1100);
+    }, 2200);
   }
 
   function removeCurrent() {
     state.chamber = state.chamber.filter((x) => x.id !== state.current.id);
   }
 
+  const CHAMBERS = 6; // 1 live round in 6 — classic odds
+
   function read() {
     if (!state.current) return;
     window.open(state.current.url, "_blank", "noopener");
     removeCurrent();
     state.survived++;
-    afterVerdict("📖 Spared. Go actually read it.");
+    showToast("📖 Spared! Off you go to read it.", "spare");
+    afterVerdict();
   }
 
-  async function kill() {
-    if (!state.current) return;
+  // Pull the trigger: gamble. Bullet under the hammer (1/CHAMBERS) = it dies.
+  async function pullTrigger() {
+    if (!state.current || state.firing) return;
+    state.firing = true;
     const b = state.current;
+    const hit = Math.floor(Math.random() * CHAMBERS) === 0;
+
+    $("read").disabled = true;
+    $("kill").disabled = true;
+    $("verdict-msg").textContent = "";
+
+    // hammer strike
+    const hammer = $("hammer");
+    hammer.classList.remove("fire"); void hammer.offsetWidth; hammer.classList.add("fire");
+
+    await wait(280); // wait for the hammer to fall (impact ~55% of the 0.5s anim)
+    hit ? playBang() : playClick();
+
+    if (!hit) {
+      // *click* — dodged. Advance the cylinder one notch.
+      cylRotation += 60;
+      $("cylinder").style.transform = `rotate(${cylRotation}deg)`;
+      removeCurrent();
+      state.survived++;
+      showToast("😮‍💨 Click! Empty chamber — it dodged the bullet.", "miss");
+      finishTrigger();
+      return;
+    }
+
+    // BANG. In real mode, actually delete now.
     if (state.mode === "real") {
-      $("kill").disabled = true;
       try {
         const res = await fetch(`/api/bookmarks/${b.id}`, { method: "DELETE" });
         if (!res.ok && res.status !== 204) {
@@ -176,28 +299,42 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
           throw new Error(detail.error || res.status);
         }
       } catch (e) {
-        $("verdict-msg").textContent = "⚠️ " + String(e.message || e);
-        $("kill").disabled = false;
+        $("verdict-msg").textContent = "⚠️ The gun jammed: " + String(e.message || e);
+        $("read").disabled = false; $("kill").disabled = false;
+        state.firing = false;
         return;
       }
-      $("kill").disabled = false;
     }
+
+    // reveal the live round in the firing chamber, then muzzle flash + recoil
+    $("round").classList.add("show");
+    const flash = $("flash");
+    flash.classList.remove("bang"); void flash.offsetWidth; flash.classList.add("bang");
+    const stage = $("stage");
+    stage.classList.remove("recoil"); void stage.offsetWidth; stage.classList.add("recoil");
+
     removeCurrent();
     state.killed++;
-    afterVerdict(`🪦 "${(b.title || "this one").slice(0, 40)}" is gone forever.`);
+    showToast(`💥 Bang! "${(b.title || "this one").slice(0, 32)}" didn't make it.`, "kill");
+    finishTrigger();
   }
 
-  function afterVerdict(msg) {
+  function finishTrigger() {
+    state.firing = false;
+    afterVerdict();
+  }
+
+  function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+  function afterVerdict() {
     renderStats();
     state.current = null;
     saveState();
-    $("verdict-msg").textContent = msg;
-    $("chamber").textContent = state.chamber.length ? "🔫" : "💨";
     setTimeout(() => {
       hide($("verdict"));
       if (state.chamber.length === 0) gameOver();
       else show($("spin"));
-    }, 1400);
+    }, 1300);
   }
 
   function gameOver() {
@@ -210,16 +347,24 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
     show($("over"));
   }
 
-  // Fetch the user's real bookmarks (all pages).
   async function fetchReal() {
     const res = await fetch("/api/bookmarks");
     if (!res.ok) throw new Error("Could not load your bookmarks. Try signing in again.");
     return (await res.json()).items ?? [];
   }
 
+  function updateMute() { $("mute").textContent = muted ? "🔇" : "🔊"; }
+  $("mute").addEventListener("click", () => {
+    muted = !muted;
+    try { localStorage.setItem("ddr_muted", muted ? "1" : "0"); } catch {}
+    updateMute();
+    if (!muted) ac(); // unlock the audio context on unmute
+  });
+  updateMute();
+
   $("spin").addEventListener("click", spin);
   $("read").addEventListener("click", read);
-  $("kill").addEventListener("click", kill);
+  $("kill").addEventListener("click", pullTrigger);
   $("restart").addEventListener("click", async () => {
     if (state.mode === "demo") return startGame(MOCK);
     hide($("over"));
@@ -227,16 +372,13 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
     try { startGame(await fetchReal()); } finally { hide($("loading")); }
   });
 
-  // --- init ---
   (async () => {
     const saved = loadState();
     if (saved) {
-      // A refresh mid-game: resume exactly where we were.
       hide($("loading"));
       resumeGame(saved);
       return;
     }
-    // Fresh start (incl. right after login): sync with reality.
     if (state.mode === "demo") {
       hide($("loading"));
       startGame(MOCK);
@@ -253,6 +395,179 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
 </script>
 
 <style>
-  .spinning { animation: shake 0.4s linear infinite; }
-  @keyframes shake { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+  /* dark saloon-table stage (overrides the paper .panel look) */
+  .stage {
+    position: relative;
+    width: 100%;
+    max-width: 540px;
+    padding: 2rem 1.8rem;
+    border-radius: 4px;
+    color: var(--paper);
+    background:
+      radial-gradient(circle at 50% 25%, #2c2114, #1a1109 75%);
+    border: 2px solid #46341d;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 22px 50px rgba(0,0,0,0.6);
+    text-align: center;
+  }
+
+  .stats {
+    display: flex; gap: 1.6rem; justify-content: center; margin-bottom: 1.6rem;
+    font-family: var(--font-type); font-size: 0.72rem; letter-spacing: 0.06em;
+    color: #b7a276; text-transform: uppercase;
+  }
+  .stats b {
+    display: block; font-family: var(--font-display); font-size: 1.7rem;
+    color: var(--brass-hi); margin-top: 0.15rem; text-shadow: 1px 1px 0 #000;
+  }
+
+  /* revolver cylinder */
+  .cylinder-wrap { position: relative; width: 168px; height: 178px; margin: 0.5rem auto 1.2rem; }
+  .hammer {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    transform-origin: 50% 100%;
+    width: 0; height: 0; z-index: 3;
+    border-left: 11px solid transparent; border-right: 11px solid transparent;
+    border-top: 18px solid var(--brass-hi);
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6));
+  }
+  .hammer.fire { animation: fire 0.5s ease; }
+  @keyframes fire {
+    0%   { transform: translateX(-50%) rotate(0); }
+    35%  { transform: translateX(-50%) rotate(-34deg); }
+    55%  { transform: translateX(-50%) rotate(5deg); }
+    100% { transform: translateX(-50%) rotate(0); }
+  }
+  /* muzzle flash on a hit */
+  .flash {
+    position: absolute; top: 46px; left: 50%; z-index: 4;
+    width: 96px; height: 96px; border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.2); opacity: 0; pointer-events: none;
+    background: radial-gradient(circle, #fff 0%, #ffd27a 28%, #ff7a1a 52%, transparent 72%);
+  }
+  .flash.bang { animation: bang 0.45s ease-out; }
+  @keyframes bang {
+    0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.2); }
+    15%  { opacity: 1; transform: translate(-50%,-50%) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(1.5); }
+  }
+  /* marks the chamber under the hammer (the firing position) */
+  .firing-ring {
+    position: absolute; top: 46px; left: 50%; z-index: 3;
+    width: 36px; height: 36px; margin: 0; border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid var(--brass-hi);
+    box-shadow: 0 0 9px rgba(224,184,90,0.55);
+    pointer-events: none;
+  }
+  /* the live round, revealed in the firing chamber on a hit */
+  .round {
+    position: absolute; top: 46px; left: 50%; z-index: 3;
+    width: 24px; height: 24px; border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.3); opacity: 0; pointer-events: none;
+    background: radial-gradient(circle at 40% 35%, #ffe9a8, #bb8a32 58%, #6e4f17);
+    box-shadow: 0 0 6px rgba(255,210,120,0.7);
+  }
+  .round.show { animation: roundIn 0.25s ease forwards; }
+  @keyframes roundIn {
+    from { opacity: 0; transform: translate(-50%,-50%) scale(0.3); }
+    to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  }
+  .cylinder {
+    position: absolute; top: 14px; left: 0;
+    width: 168px; height: 168px; border-radius: 50%;
+    background:
+      radial-gradient(circle at 38% 32%, #5a5a60 0%, #34343a 38%, #1c1c20 72%, #0d0d10 100%);
+    border: 5px solid;
+    border-color: var(--brass-hi) var(--brass) #6e4f17 var(--brass);
+    box-shadow: 0 0 0 2px #0c0c0e, 0 10px 26px rgba(0,0,0,0.6), inset 0 0 18px rgba(0,0,0,0.7);
+    transition: transform 2.1s cubic-bezier(0.18, 0.9, 0.12, 1);
+  }
+  .cylinder.spinning { filter: blur(0.4px); }
+  .hole {
+    position: absolute; top: 50%; left: 50%; width: 30px; height: 30px;
+    margin: -15px 0 0 -15px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #1a1a1d, #050506);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.08);
+    transform: rotate(calc(var(--i) * 60deg)) translateY(-52px);
+  }
+  .hub {
+    position: absolute; top: 50%; left: 50%; width: 38px; height: 38px;
+    margin: -19px 0 0 -19px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #d8d8de, #6a6a70 60%, #2a2a2e);
+    box-shadow: 0 0 0 3px #0c0c0e, inset 0 0 6px rgba(0,0,0,0.6);
+  }
+  .hub::after {
+    content: ""; position: absolute; inset: 12px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, var(--brass-hi), #6e4f17);
+  }
+
+  /* friendly result toast, pops above the gun */
+  .toast {
+    position: absolute; bottom: calc(100% + 12px); left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    width: max-content; max-width: 250px; text-align: center; line-height: 1.3;
+    font-family: var(--font-type); font-size: 0.8rem;
+    padding: 0.55rem 0.9rem; border-radius: 5px;
+    background: var(--paper-hi); color: var(--ink);
+    border: 2px solid var(--ink);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.55);
+    opacity: 0; pointer-events: none; z-index: 8;
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.2,1.4,0.4,1);
+  }
+  .toast::after {
+    content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 8px solid transparent; border-top-color: var(--ink);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast--kill { background: #7c1d12; color: var(--paper-hi); border-color: #3d0e08; }
+  .toast--kill::after { border-top-color: #3d0e08; }
+  .toast--miss { background: #2f5d3a; color: var(--paper-hi); border-color: #1b3a23; }
+  .toast--miss::after { border-top-color: #1b3a23; }
+  .toast--spare { background: var(--sage); color: var(--paper-hi); border-color: #243f2a; }
+  .toast--spare::after { border-top-color: #243f2a; }
+
+  .mute {
+    position: absolute; top: 12px; right: 12px; z-index: 6;
+    background: transparent; border: 1.5px solid #5a4730; color: #c9b896;
+    padding: 0.3rem 0.5rem; font-size: 0.9rem; box-shadow: none; border-radius: 4px;
+  }
+  .mute:hover { filter: none; border-color: var(--brass); transform: none; box-shadow: none; }
+
+  .hint { font-family: var(--font-type); color: #b7a276; font-size: 0.85rem; }
+
+  /* WANTED poster verdict card */
+  .poster {
+    background: radial-gradient(circle at 30% 18%, var(--paper-hi), var(--paper) 72%);
+    color: var(--ink);
+    border-radius: 3px; padding: 1.3rem 1.2rem;
+    box-shadow: 0 0 0 1px var(--paper-edge), 0 14px 30px rgba(0,0,0,0.5);
+    border: 1px solid var(--paper-edge);
+    transform: rotate(-1deg);
+  }
+  .poster.slam-in { animation: slam 0.5s cubic-bezier(0.2, 1.3, 0.4, 1) both; }
+  @keyframes slam {
+    0% { opacity: 0; transform: scale(1.18) rotate(-4deg); }
+    70% { opacity: 1; }
+    100% { transform: scale(1) rotate(-1deg); }
+  }
+  .poster-top {
+    font-family: var(--font-display); font-size: 2rem; letter-spacing: 0.12em;
+    color: var(--ink); border-bottom: 3px double var(--ink-soft); padding-bottom: 0.3rem;
+  }
+  .poster-rule { font-family: var(--font-type); font-size: 0.7rem; letter-spacing: 0.25em; color: var(--blood); margin: 0.3rem 0 0.8rem; text-transform: uppercase; }
+  .card-source { font-family: var(--font-type); font-size: 0.8rem; color: var(--rust); }
+  .card-title { font-family: var(--font-display); font-size: 1.25rem; line-height: 1.2; margin: 0.3rem 0; color: var(--ink); }
+  .verdict-msg { font-family: var(--font-type); min-height: 1.4rem; margin-top: 0.7rem; color: #c9b896; }
+
+  .back { font-family: var(--font-type); color: var(--brass); text-decoration: none; font-size: 0.85rem; }
+  .back:hover { color: var(--brass-hi); }
+
+  .stage.recoil { animation: recoil 0.4s ease; }
+  @keyframes recoil {
+    0% { transform: translate(0,0); }
+    20% { transform: translate(-4px, 3px) rotate(-0.4deg); }
+    45% { transform: translate(5px, -2px) rotate(0.3deg); }
+    70% { transform: translate(-3px, 1px); }
+    100% { transform: translate(0,0); }
+  }
 </style>

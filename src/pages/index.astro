@@ -6,43 +6,45 @@ const profile = await currentUser(Astro.cookies);
 ---
 
 <Layout title="Daily Dev Roulette" profile={profile}>
-  <h1>🎲 Daily Dev Roulette</h1>
-  <p class="tagline">Put your daily.dev habits on the line. One spin at a time.</p>
+  <div class="reveal r1" style="text-align:center;">
+    <p class="kicker">★ ★ ★ &nbsp; THE TERRITORY OF &nbsp; ★ ★ ★</p>
+    <h1>Daily Dev Roulette</h1>
+    <p class="tagline">Round up your forgotten bookmarks. Read 'em or bury 'em.</p>
+  </div>
 
   {!profile && (
-    <!-- SIGN IN (logged out) -->
-    <section class="panel" style="margin-bottom:1.5rem;">
-      <h2>Sign in</h2>
-      <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, needs a Plus subscription) to play with your real data. It stays private — only in a secure cookie for your session.</p>
-      <input type="password" id="token" placeholder="Paste your daily.dev API token" autocomplete="off" />
+    <section class="panel reveal r2" style="margin-bottom:1.4rem;">
+      <h2>Show your papers</h2>
+      <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, needs a Plus subscription) to ride with your real bookmarks. It stays in a sealed saddlebag — a secure cookie, only for your session.</p>
+      <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
       <button class="btn-primary" id="signin">Sign in</button>
       <p class="error" id="login-error"></p>
     </section>
   )}
 
   {profile && (
-    <p class="tagline" style="margin-top:-1rem;">Welcome back, {profile.name || profile.username || "you"}.</p>
+    <p class="tagline reveal r2" style="margin-top:-1rem;">Well howdy, {profile.name || profile.username || "stranger"}.</p>
   )}
 
-  <!-- MODES -->
-  <section class="panel">
-    <h2 style="margin-bottom:1rem;">Pick your roulette</h2>
+  <section class="panel reveal r3">
+    <h2 style="margin-bottom:1rem;">Choose your duel</h2>
 
     <div class="mode-card">
+      <span class="mode-stamp">NEW</span>
       <div class="mode-head">
         <span class="mode-icon">🔖</span>
         <div>
           <div class="mode-title">Bookmarks Roulette</div>
-          <div class="card-meta">Spin a bookmark. Read it, or delete it forever.</div>
+          <div class="card-meta">Spin a bookmark. Pardon it, or shoot it dead.</div>
         </div>
       </div>
-      {profile ? (
-        <p class="card-meta">You have <b id="bm-count">…</b> bookmarks in the chamber.</p>
-      ) : null}
-      <div class="row" style="margin-top:0.8rem;">
+      {profile && (
+        <p class="card-meta" style="margin-top:0.6rem;">There's <b id="bm-count">…</b> in the chamber, partner.</p>
+      )}
+      <div class="row" style="margin-top:0.9rem;">
         {profile && (
           <a href="/roulette" style="flex:1; text-decoration:none;">
-            <button class="btn-primary">🎰 Play</button>
+            <button class="btn-primary">🤠 Draw</button>
           </a>
         )}
         <a href="/roulette?demo=1" style="flex:1; text-decoration:none;">
@@ -51,18 +53,17 @@ const profile = await currentUser(Astro.cookies);
       </div>
     </div>
 
-    <p class="card-meta" style="text-align:center; margin-top:1.2rem; opacity:0.7;">More roulettes coming soon…</p>
+    <p class="coming">— more duels comin' to town —</p>
   </section>
 </Layout>
 
 <script>
-  // --- logged-out: sign in ---
   const signin = document.getElementById("signin");
   signin?.addEventListener("click", async () => {
     const token = (document.getElementById("token") as HTMLInputElement).value.trim();
     const err = document.getElementById("login-error")!;
     err.textContent = "";
-    if (!token) { err.textContent = "Paste a token first."; return; }
+    if (!token) { err.textContent = "Paste a token first, partner."; return; }
     (signin as HTMLButtonElement).disabled = true;
     try {
       const res = await fetch("/api/auth", {
@@ -71,7 +72,6 @@ const profile = await currentUser(Astro.cookies);
         body: JSON.stringify({ token }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Sign-in failed");
-      // Fresh login -> drop any stale game so the roulette re-syncs with reality.
       try { localStorage.removeItem("ddr_progress"); } catch {}
       window.location.href = "/";
     } catch (e: any) {
@@ -80,7 +80,6 @@ const profile = await currentUser(Astro.cookies);
     }
   });
 
-  // --- logged-in: show live bookmark count ---
   const countEl = document.getElementById("bm-count");
   if (countEl) {
     fetch("/api/bookmarks")
@@ -91,13 +90,43 @@ const profile = await currentUser(Astro.cookies);
 </script>
 
 <style>
+  .kicker {
+    font-family: var(--font-type);
+    letter-spacing: 0.35em;
+    font-size: 0.7rem;
+    color: var(--brass);
+    margin: 0 0 0.4rem;
+  }
   .mode-card {
-    border: 1px solid #2c2c36;
-    border-radius: 12px;
+    position: relative;
+    border: 2px solid var(--ink);
+    border-radius: 3px;
     padding: 1.2rem;
-    background: #12121a;
+    background: repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0 8px, transparent 8px 16px), #f1e6c9;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
   }
   .mode-head { display: flex; gap: 0.9rem; align-items: center; }
   .mode-icon { font-size: 2rem; }
-  .mode-title { font-size: 1.2rem; font-weight: 700; }
+  .mode-title { font-family: var(--font-display); font-size: 1.25rem; color: var(--ink); }
+  .mode-stamp {
+    position: absolute; top: -12px; right: 14px;
+    font-family: var(--font-display); font-size: 0.7rem;
+    color: var(--blood); border: 2px solid var(--blood);
+    padding: 2px 8px; border-radius: 3px; transform: rotate(7deg);
+    background: #f1e6c9; letter-spacing: 0.1em;
+  }
+  .coming {
+    text-align: center; font-family: var(--font-type);
+    color: var(--ink-soft); font-size: 0.8rem; margin: 1.3rem 0 0;
+  }
+
+  /* staggered entrance */
+  .reveal { animation: rise 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+  .r1 { animation-delay: 0.05s; }
+  .r2 { animation-delay: 0.2s; }
+  .r3 { animation-delay: 0.35s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(22px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
