@@ -5,6 +5,11 @@
 
 A daily.dev hackathon project. Put your daily.dev habits on the line, one spin at a time. It's built as a hub of "roulette" modes — the first (and currently only) mode is **Bookmarks Roulette**, with room to add more.
 
+<p align="center">
+  <img src="docs/home.png" alt="The hub: sign in and choose your duel" width="380" />
+  <img src="docs/roulette.png" alt="Bookmarks Roulette: spin the cylinder, then spare or shoot each bookmark" width="380" />
+</p>
+
 ## Bookmarks Roulette
 
 Your bookmarks pile up and rot — this forces a reckoning. One spin serves one bookmark: **read it** (spared) or **pull the trigger** (deleted forever). Funny, but it actually drains your backlog.
