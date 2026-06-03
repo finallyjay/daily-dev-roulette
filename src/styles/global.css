@@ -71,6 +71,8 @@
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
   }
   /* film grain + dust */
   body::before {
@@ -94,6 +96,7 @@
   main {
     position: relative;
     z-index: 2;
+    flex: 1 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -346,5 +349,49 @@
     filter: none;
     border-color: var(--brass);
     color: var(--brass-hi);
+  }
+
+  /* saloon footer — credits + source */
+  footer.sitefoot {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 0.85rem;
+    padding: 1rem 1.3rem;
+    font-family: var(--font-type);
+    font-size: 0.78rem;
+    line-height: 1;
+    color: #8c7a5a;
+    background: linear-gradient(0deg, #1d140b, #150d06);
+    border-top: 2px solid var(--brass);
+  }
+  footer.sitefoot .foot-credit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  footer.sitefoot a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--brass-hi);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s ease;
+  }
+  footer.sitefoot a:hover {
+    border-bottom-color: var(--brass-hi);
+  }
+  footer.sitefoot svg {
+    width: 15px;
+    height: 15px;
+    fill: currentColor;
+  }
+  footer.sitefoot .foot-sep {
+    color: #5a4730;
   }
 }
