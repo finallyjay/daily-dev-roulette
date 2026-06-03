@@ -14,9 +14,16 @@ const {
   profile = null,
 } = Astro.props;
 
-// Absolute URLs resolved at request time, so OG works on any deploy domain.
-const canonical = new URL(Astro.url.pathname, Astro.url.origin).href;
-const ogImage = new URL("/og-image.png", Astro.url.origin).href;
+// Absolute URLs for OG/canonical. Behind Vercel's proxy Astro.url.origin reads
+// as "localhost", which breaks link previews, so prefer the forwarded host
+// headers and fall back to the configured `site` (then Astro.url.origin).
+const forwardedHost = Astro.request.headers.get("x-forwarded-host");
+const forwardedProto = Astro.request.headers.get("x-forwarded-proto") ?? "https";
+const origin = forwardedHost
+  ? `${forwardedProto}://${forwardedHost}`
+  : (Astro.site?.origin ?? Astro.url.origin);
+const canonical = new URL(Astro.url.pathname, origin).href;
+const ogImage = new URL("/og-image.png", origin).href;
 ---
 
 <!doctype html>
