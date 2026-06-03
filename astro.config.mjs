@@ -5,5 +5,8 @@ import vercel from "@astrojs/vercel";
 // All daily.dev calls go through them, keeping the token off the client.
 export default defineConfig({
   output: "server",
-  adapter: vercel(),
+  adapter: vercel({
+    // Inject the Vercel Web Analytics script in production.
+    webAnalytics: { enabled: true },
+  }),
 });
