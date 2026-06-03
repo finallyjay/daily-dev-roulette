@@ -1,5 +1,8 @@
 # 🎲 daily.dev Roulette
 
+[![CI](https://github.com/finallyjay/daily-dev-roulette/actions/workflows/ci.yml/badge.svg?event=pull_request)](https://github.com/finallyjay/daily-dev-roulette/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 A daily.dev hackathon project. Put your daily.dev habits on the line, one spin at a time. It's built as a hub of "roulette" modes — the first (and currently only) mode is **Bookmarks Roulette**, with room to add more.
 
 ## Bookmarks Roulette
