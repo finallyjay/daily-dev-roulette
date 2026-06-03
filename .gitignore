@@ -18,6 +18,13 @@ skills-lock.json
 # debug screenshots from spike scripts
 spike/*.png
 
+# playwright e2e artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.last-run.json
+
 # os
 .DS_Store
 .vercel
