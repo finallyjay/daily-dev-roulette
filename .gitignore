@@ -20,3 +20,4 @@ spike/*.png
 
 # os
 .DS_Store
+.vercel
