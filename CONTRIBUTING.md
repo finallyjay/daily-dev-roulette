@@ -42,11 +42,18 @@ map. In short:
 2. Create a branch off `main`: `git checkout -b my-feature`.
 3. Keep changes focused — one logical change per pull request.
 4. Match the existing style: TypeScript, Astro components, and the current
-   formatting/naming conventions. No formatter config is enforced yet, so just
-   keep diffs clean and consistent with surrounding code.
-5. **Test your change manually**: run `npm run dev` and exercise both demo mode
-   and (if you have Plus) real mode. Run `npm run build` to confirm the
-   production build passes.
+   conventions. Linting and formatting are enforced in CI:
+   - `npm run lint` — [oxlint](https://oxc.rs) (fast Rust linter)
+   - `npm run format` — [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html)
+     to auto-format, or `npm run format:check` to verify
+     (oxfmt is still alpha and does not format `.astro` files yet, so keep those
+     tidy by hand.)
+5. **Test your change**: `npm test` runs the Playwright E2E suite against the
+   demo flow. Also exercise it manually with `npm run dev` (and real mode if you
+   have Plus), and run `npm run build` to confirm the production build passes.
+
+All of the above (`lint`, `format:check`, `build`, `test`) run automatically on
+every pull request via GitHub Actions, and must pass before a PR can be merged.
 
 ## Security
 

@@ -1,14 +1,18 @@
 {
   "name": "daily-dev-roulette",
-  "type": "module",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "lint": "oxlint .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "test": "playwright test"
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.8",
@@ -16,7 +20,10 @@
     "astro": "^6.4.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/vite": "^4.3.0",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0",
     "playwright": "^1.60.0",
     "tailwindcss": "^4.3.0"
   }

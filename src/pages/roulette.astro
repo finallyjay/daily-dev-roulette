@@ -277,7 +277,7 @@ const mockJson = JSON.stringify(MOCK_BOOKMARKS);
     hammer.classList.remove("fire"); void hammer.offsetWidth; hammer.classList.add("fire");
 
     await wait(280); // wait for the hammer to fall (impact ~55% of the 0.5s anim)
-    hit ? playBang() : playClick();
+    if (hit) playBang(); else playClick();
 
     if (!hit) {
       // *click* — dodged. Advance the cylinder one notch.

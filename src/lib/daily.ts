@@ -47,7 +47,10 @@ export async function validateToken(token: string): Promise<boolean> {
 }
 
 // Response shape per OpenAPI: { data: BookmarkedPost[], pagination: { cursor, hasNextPage } }
-type BookmarksPage = { data: Bookmark[]; pagination?: { cursor?: string | null; hasNextPage?: boolean } };
+type BookmarksPage = {
+  data: Bookmark[];
+  pagination?: { cursor?: string | null; hasNextPage?: boolean };
+};
 
 /** Fetches one page (max 50). `unreadOnly` targets the dead-weight pile we want to cull. */
 export async function listBookmarks(
@@ -101,7 +104,11 @@ export async function deleteBookmark(token: string, id: string): Promise<void> {
 }
 
 /** Spares it into a list (e.g. a "Survivors" / "Read Next" folder). null removes from list. */
-export async function moveBookmark(token: string, id: string, listId: string | null): Promise<void> {
+export async function moveBookmark(
+  token: string,
+  id: string,
+  listId: string | null,
+): Promise<void> {
   const res = await fetch(`${BASE}/bookmarks/${id}`, {
     method: "PATCH",
     headers: jsonHeaders(token),
