@@ -6,14 +6,14 @@ const profile = await currentUser(Astro.cookies);
 ---
 
 <Layout title="daily.dev Roulette" profile={profile}>
-  <div class="reveal r1" style="text-align:center;">
+  <div class="reveal r1 text-center">
     <p class="kicker">★ ★ ★ &nbsp; THE TERRITORY OF &nbsp; ★ ★ ★</p>
     <h1>daily.dev Roulette</h1>
     <p class="tagline">Round up your forgotten bookmarks. Read 'em or bury 'em.</p>
   </div>
 
   {!profile && (
-    <section class="panel reveal r2" style="margin-bottom:1.4rem;">
+    <section class="panel reveal r2 mb-[1.4rem]">
       <h2>Show your papers</h2>
       <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, needs a Plus subscription) to ride with your real bookmarks. It stays in a sealed saddlebag — a secure cookie, only for your session.</p>
       <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
@@ -23,11 +23,11 @@ const profile = await currentUser(Astro.cookies);
   )}
 
   {profile && (
-    <p class="tagline reveal r2" style="margin-top:-1rem;">Well howdy, {profile.name || profile.username || "stranger"}.</p>
+    <p class="tagline reveal r2 -mt-4">Well howdy, {profile.name || profile.username || "stranger"}.</p>
   )}
 
   <section class="panel reveal r3">
-    <h2 style="margin-bottom:1rem;">Choose your duel</h2>
+    <h2 class="mb-4">Choose your duel</h2>
 
     <div class="mode-card">
       <span class="mode-stamp">NEW</span>
@@ -39,16 +39,16 @@ const profile = await currentUser(Astro.cookies);
         </div>
       </div>
       {profile && (
-        <p class="card-meta" style="margin-top:0.6rem;">There's <b id="bm-count">…</b> in the chamber, partner.</p>
+        <p class="card-meta mt-[0.6rem]">There's <b id="bm-count">…</b> in the chamber, partner.</p>
       )}
-      <div class="row" style="margin-top:0.9rem;">
+      <div class="row mt-[0.9rem]">
         {profile && (
-          <a href="/roulette" style="flex:1; text-decoration:none;">
+          <a href="/roulette" class="flex-1 no-underline">
             <button class="btn-primary">🤠 Draw</button>
           </a>
         )}
-        <a href="/roulette?demo=1" style="flex:1; text-decoration:none;">
-          <button class="btn-ghost" style="width:100%;">▶ Demo</button>
+        <a href="/roulette?demo=1" class="flex-1 no-underline">
+          <button class="btn-ghost w-full">▶ Demo</button>
         </a>
       </div>
     </div>
