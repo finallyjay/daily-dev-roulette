@@ -15,6 +15,6 @@ export const DELETE: APIRoute = async ({ params, cookies }) => {
     return new Response(null, { status: 204 });
   } catch (err) {
     console.error("[delete] ", err);
-    return new Response(JSON.stringify({ error: String(err) }), { status: 502 });
+    return new Response(JSON.stringify({ error: "Failed to delete bookmark" }), { status: 502 });
   }
 };
