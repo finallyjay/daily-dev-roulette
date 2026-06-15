@@ -14,6 +14,7 @@ export const GET: APIRoute = async ({ url, cookies }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 502 });
+    console.error("[bookmarks:list] ", err);
+    return new Response(JSON.stringify({ error: "Failed to load bookmarks" }), { status: 502 });
   }
 };

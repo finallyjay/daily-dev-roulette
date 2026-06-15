@@ -11,6 +11,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default for GITHUB_TOKEN; this workflow only needs to read code.
+permissions:
+  contents: read
+
 jobs:
   ci:
     name: ci
