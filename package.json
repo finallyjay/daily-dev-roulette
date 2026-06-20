@@ -17,7 +17,7 @@
   "dependencies": {
     "@astrojs/vercel": "^10.0.8",
     "@vercel/speed-insights": "^2.0.0",
-    "astro": "^6.4.5"
+    "astro": "^6.4.8"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
