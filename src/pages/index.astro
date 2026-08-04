@@ -82,9 +82,13 @@ const profile = await currentUser(Astro.cookies);
 
   const countEl = document.getElementById("bm-count");
   if (countEl) {
-    fetch("/api/bookmarks")
+    // Lightweight count endpoint: one daily.dev call, not a full paginated load.
+    fetch("/api/bookmarks/count")
       .then((r) => r.json())
-      .then((d) => { countEl.textContent = String(d.items?.length ?? 0); })
+      .then((d) => {
+        const n = d.count ?? 0;
+        countEl.textContent = d.exact ? String(n) : `${n}+`;
+      })
       .catch(() => { countEl.textContent = "?"; });
   }
 </script>

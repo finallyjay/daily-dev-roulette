@@ -47,10 +47,39 @@ export async function validateToken(token: string): Promise<boolean> {
 }
 
 // Response shape per OpenAPI: { data: BookmarkedPost[], pagination: { cursor, hasNextPage } }
+// `total` is read defensively: the current API does not document it, but if a
+// future version returns it we can report an exact count from a single page.
 type BookmarksPage = {
   data: Bookmark[];
-  pagination?: { cursor?: string | null; hasNextPage?: boolean };
+  pagination?: { cursor?: string | null; hasNextPage?: boolean; total?: number };
+  total?: number;
 };
+
+/**
+ * Cheap chamber tally for the homepage. Fetches a single page instead of
+ * paginating the whole pile (which `listAllBookmarks` would do just to count).
+ * Returns an exact count when the API exposes a total or the pile fits in one
+ * page; otherwise `exact` is false and the count is the first-page size, which
+ * the UI renders as "N+".
+ */
+export async function countBookmarks(
+  token: string,
+  opts: { unreadOnly?: boolean } = {},
+): Promise<{ count: number; exact: boolean }> {
+  const url = new URL(`${BASE}/bookmarks/`);
+  url.searchParams.set("limit", "50");
+  if (opts.unreadOnly) url.searchParams.set("unreadOnly", "true");
+
+  const res = await fetch(url, { headers: authHeaders(token) });
+  if (!res.ok) throw new Error(`countBookmarks failed: ${res.status}`);
+
+  const body = (await res.json()) as BookmarksPage;
+  const total = body.pagination?.total ?? body.total;
+  if (typeof total === "number") return { count: total, exact: true };
+
+  const items = body.data ?? [];
+  return { count: items.length, exact: !(body.pagination?.hasNextPage ?? false) };
+}
 
 /** Fetches one page (max 50). `unreadOnly` targets the dead-weight pile we want to cull. */
 export async function listBookmarks(
