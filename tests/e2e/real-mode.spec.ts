@@ -192,10 +192,20 @@ test.describe("homepage bookmark counter (bm-count)", () => {
     await expect(page.locator("#bm-count")).toHaveText("50+");
   });
 
+  test("shows a fallback when the count endpoint returns an error response", async ({ page }) => {
+    // The real user-visible failure mode: /api/bookmarks/count returning a
+    // non-OK response with a valid JSON error body (see
+    // src/pages/api/bookmarks/count.ts), not just a transport-level failure.
+    await page.route("**/api/bookmarks/count", async (route) => {
+      await route.fulfill({ status: 502, json: { error: "Failed to count bookmarks" } });
+    });
+
+    await loadHomeWithCounterSlot(page);
+
+    await expect(page.locator("#bm-count")).toHaveText("?");
+  });
+
   test("shows a fallback when the count fetch itself fails", async ({ page }) => {
-    // The counter script doesn't check res.ok (a 502 with valid JSON would
-    // still parse and render "0+"); it only falls back to "?" when the
-    // fetch/parse itself rejects, so simulate a hard network failure.
     await page.route("**/api/bookmarks/count", async (route) => {
       await route.abort("failed");
     });
