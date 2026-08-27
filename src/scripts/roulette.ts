@@ -70,7 +70,16 @@ export function initRoulette(): void {
   };
   let cylRotation = 0;
 
+  // Real-mode chambers hold actual bookmark titles/URLs, and they can go
+  // stale: daily.dev may delete or read them out from under a saved run, so a
+  // resume can serve up a phantom bookmark whose DELETE 404s ("the gun
+  // jammed") behind a stale-looking one. Demo mode plays with fixed mock data
+  // that never goes stale, so only demo progress is ever persisted; real runs
+  // always start fresh from a live /api/bookmarks fetch, and any leftover
+  // real-mode chamber sitting in localStorage (e.g. from before this fix, or
+  // another user's session on a shared machine) is wiped on load.
   function saveState() {
+    if (state.mode !== "demo") return;
     try {
       localStorage.setItem(
         STORAGE_KEY,
@@ -92,8 +101,16 @@ export function initRoulette(): void {
   }
   function loadState(): SavedState | null {
     try {
-      const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") as SavedState | null;
-      return s && Array.isArray(s.chamber) && s.mode === state.mode ? s : null;
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const s = JSON.parse(raw) as SavedState | null;
+      if (s && Array.isArray(s.chamber) && s.mode === "demo" && state.mode === "demo") {
+        return s;
+      }
+      // Anything else found here (a real-mode chamber, a mismatched mode, or
+      // junk) is stale or private — never resume from it, and clear it out.
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
     } catch {
       return null;
     }
