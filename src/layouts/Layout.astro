@@ -14,14 +14,16 @@ const {
   profile = null,
 } = Astro.props;
 
-// Absolute URLs for OG/canonical. Behind Vercel's proxy Astro.url.origin reads
-// as "localhost", which breaks link previews, so prefer the forwarded host
-// headers and fall back to the configured `site` (then Astro.url.origin).
-const forwardedHost = Astro.request.headers.get("x-forwarded-host");
-const forwardedProto = Astro.request.headers.get("x-forwarded-proto") ?? "https";
-const origin = forwardedHost
-  ? `${forwardedProto}://${forwardedHost}`
-  : (Astro.site?.origin ?? Astro.url.origin);
+// Absolute URLs for OG/canonical. `Astro.site` (astro.config.mjs) is the
+// configured production domain and is the only source of truth here — we
+// deliberately do NOT read `x-forwarded-host`/`x-forwarded-proto` to build
+// this URL. Those headers are attacker-controlled unless a trusted proxy
+// (like Vercel's) strips/sets them, so trusting them for canonical/og:url
+// would let a spoofed Host header poison link previews and canonical tags
+// behind any frontend that isn't as careful as Vercel's. `Astro.url.origin`
+// is kept only as a last-resort fallback for the (currently impossible)
+// case where `site` is left unset in config.
+const origin = Astro.site?.origin ?? Astro.url.origin;
 const canonical = new URL(Astro.url.pathname, origin).href;
 const ogImage = new URL("/og-image.png", origin).href;
 ---
