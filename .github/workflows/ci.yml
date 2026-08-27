@@ -1,10 +1,13 @@
 name: CI
 
-# Runs on pull requests only. `main` is protected so code only lands via PRs,
-# which this validates before merge; Vercel handles build & deploy on push.
+# Runs on pull requests, which validates code before merge (`main` is
+# protected so code only lands via PRs); Vercel handles build & deploy on
+# push. Also allows manual re-runs via workflow_dispatch for cheap re-checks
+# without pushing a new commit.
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 # Cancel superseded runs on the same PR (e.g. rapid pushes to a branch).
 concurrency:
