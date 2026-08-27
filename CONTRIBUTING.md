@@ -23,9 +23,6 @@ No environment variables are required — **demo mode** (`/roulette?demo=1`) run
 entirely in the browser on a fake bookmark pile, so you can develop without a
 daily.dev Plus account or token.
 
-Optionally, copy `.env.example` to `.env` and set `DAILY_TOKEN` to power the
-"Try the demo" button with a real token (see the file for details).
-
 ## Project layout
 
 See the **Architecture** section of the [README](./README.md) for a file-by-file
