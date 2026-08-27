@@ -13,8 +13,6 @@ export type Bookmark = {
   bookmarkedAt?: string;
 };
 
-// Only the auth header by default. Setting Content-Type: application/json without a
-// body makes daily.dev's Fastify backend reject the request ("Body cannot be empty").
 export type Profile = {
   id: string;
   name: string | null;
@@ -32,10 +30,6 @@ export async function getProfile(token: string): Promise<Profile> {
   const res = await fetch(`${BASE}/profile/`, { headers: authHeaders(token) });
   if (!res.ok) throw new Error(`getProfile failed: ${res.status}`);
   return (await res.json()) as Profile;
-}
-
-function jsonHeaders(token: string) {
-  return { ...authHeaders(token), "Content-Type": "application/json" };
 }
 
 /** Validates a token by making one cheap authenticated call. Returns true if accepted. */
@@ -130,18 +124,4 @@ export async function deleteBookmark(token: string, id: string): Promise<void> {
     const body = await res.text().catch(() => "");
     throw new Error(`daily.dev DELETE /bookmarks/${id} -> ${res.status} ${res.statusText} ${body}`);
   }
-}
-
-/** Spares it into a list (e.g. a "Survivors" / "Read Next" folder). null removes from list. */
-export async function moveBookmark(
-  token: string,
-  id: string,
-  listId: string | null,
-): Promise<void> {
-  const res = await fetch(`${BASE}/bookmarks/${id}`, {
-    method: "PATCH",
-    headers: jsonHeaders(token),
-    body: JSON.stringify({ listId }),
-  });
-  if (!res.ok) throw new Error(`moveBookmark failed: ${res.status}`);
 }
