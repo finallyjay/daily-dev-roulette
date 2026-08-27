@@ -81,7 +81,10 @@ const profile = await currentUser(Astro.cookies);
   if (countEl) {
     // Lightweight count endpoint: one daily.dev call, not a full paginated load.
     fetch("/api/bookmarks/count")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`count failed: ${r.status}`);
+        return r.json();
+      })
       .then((d) => {
         const n = d.count ?? 0;
         countEl.textContent = d.exact ? String(n) : `${n}+`;
