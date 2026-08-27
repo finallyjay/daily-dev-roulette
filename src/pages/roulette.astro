@@ -43,7 +43,7 @@ const mode = isDemo ? "demo" : "real";
       </div>
     </div>
 
-    <p id="loading" class="hint">Rounding up your bookmarks…</p>
+    <p id="loading" class="hint" role="status" aria-live="polite">Rounding up your bookmarks…</p>
 
     <div id="verdict" class="hidden">
       <div class="poster" id="poster">
@@ -58,7 +58,7 @@ const mode = isDemo ? "demo" : "real";
         <button class="btn-read" id="read">📖 Spare it</button>
         <button class="btn-kill" id="kill">🔫 Pull the trigger</button>
       </div>
-      <p class="verdict-msg" id="verdict-msg"></p>
+      <p class="verdict-msg" id="verdict-msg" role="status" aria-live="polite"></p>
     </div>
 
     <button class="btn-primary hidden" id="spin">🤠 Spin the cylinder</button>

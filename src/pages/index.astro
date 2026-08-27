@@ -16,9 +16,10 @@ const profile = await currentUser(Astro.cookies);
     <section class="panel reveal r2 mb-[1.4rem]">
       <h2>Show your papers</h2>
       <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, needs a Plus subscription) to ride with your real bookmarks. It stays in a sealed saddlebag — a secure cookie, only for your session.</p>
+      <label for="token" class="sr-only">daily.dev API token</label>
       <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
       <button class="btn-primary" id="signin">Sign in</button>
-      <p class="error" id="login-error"></p>
+      <p class="error" id="login-error" role="alert" aria-live="assertive"></p>
     </section>
   )}
 
