@@ -387,9 +387,11 @@ export function initRoulette(): void {
     show($("loading"));
     try {
       startGame(await fetchReal());
-    } finally {
-      hide($("loading"));
+    } catch (e: any) {
+      $("loading").textContent = "⚠️ " + String(e.message || e);
+      return;
     }
+    hide($("loading"));
   });
 
   (async () => {
