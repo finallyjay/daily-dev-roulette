@@ -12,11 +12,11 @@ test.describe("home / hub", () => {
 
     // Logged-out visitors get a token sign-in panel and a demo entry point.
     await expect(page.locator("#token")).toBeVisible();
-    const demo = page.getByRole("button", { name: /Demo/ });
+    const demo = page.getByRole("link", { name: /Demo/ });
     await expect(demo).toBeVisible();
   });
 
-  test("the demo button links to the demo roulette", async ({ page }) => {
+  test("the demo link routes to the demo roulette", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: /Demo/ }).click();
     await expect(page).toHaveURL(/\/roulette\?demo=1/);

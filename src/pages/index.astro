@@ -43,13 +43,9 @@ const profile = await currentUser(Astro.cookies);
       )}
       <div class="row mt-[0.9rem]">
         {profile && (
-          <a href="/roulette" class="flex-1 no-underline">
-            <button class="btn-primary">🤠 Draw</button>
-          </a>
+          <a href="/roulette" class="btn-primary flex-1 no-underline text-center">🤠 Draw</a>
         )}
-        <a href="/roulette?demo=1" class="flex-1 no-underline">
-          <button class="btn-ghost w-full">▶ Demo</button>
-        </a>
+        <a href="/roulette?demo=1" class="btn-ghost w-full flex-1 no-underline text-center">▶ Demo</a>
       </div>
     </div>
 
