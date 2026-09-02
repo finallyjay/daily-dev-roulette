@@ -1,0 +1,4 @@
+# esbuild ships its platform binary via the optional @esbuild/* packages;
+# its postinstall only validates it, so it does not need to run here.
+allowBuilds:
+  esbuild: false
