@@ -22,8 +22,8 @@ Your bookmarks pile up and rot — this forces a reckoning. One spin serves one 
 ## Run locally
 
 ```bash
-npm install
-npm run dev      # http://localhost:4321
+pnpm install
+pnpm dev      # http://localhost:4321
 ```
 
 ## Deploy

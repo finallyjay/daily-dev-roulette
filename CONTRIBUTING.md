@@ -15,8 +15,8 @@ participating, you're expected to uphold it. Report unacceptable behavior to
 ```bash
 git clone https://github.com/finallyjay/daily-dev-roulette.git
 cd daily-dev-roulette
-npm install
-npm run dev      # http://localhost:4321
+pnpm install
+pnpm dev      # http://localhost:4321
 ```
 
 No environment variables are required — **demo mode** (`/roulette?demo=1`) runs
@@ -40,14 +40,14 @@ map. In short:
 3. Keep changes focused — one logical change per pull request.
 4. Match the existing style: TypeScript, Astro components, and the current
    conventions. Linting and formatting are enforced in CI:
-   - `npm run lint` — [oxlint](https://oxc.rs) (fast Rust linter)
-   - `npm run format` — [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html)
-     to auto-format, or `npm run format:check` to verify
+   - `pnpm lint` — [oxlint](https://oxc.rs) (fast Rust linter)
+   - `pnpm format` — [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html)
+     to auto-format, or `pnpm format:check` to verify
      (oxfmt is still alpha and does not format `.astro` files yet, so keep those
      tidy by hand.)
-5. **Test your change**: `npm test` runs the Playwright E2E suite against the
-   demo flow. Also exercise it manually with `npm run dev` (and real mode if you
-   have Plus), and run `npm run build` to confirm the production build passes.
+5. **Test your change**: `pnpm test` runs the Playwright E2E suite against the
+   demo flow. Also exercise it manually with `pnpm dev` (and real mode if you
+   have Plus), and run `pnpm build` to confirm the production build passes.
 
 All of the above (`lint`, `format:check`, `build`, `test`) run automatically on
 every pull request via GitHub Actions, and must pass before a PR can be merged.
@@ -63,7 +63,7 @@ instead of opening a public issue.
 
 - Fill out the pull request template.
 - Reference the issue your PR addresses (e.g. "Closes #12").
-- Make sure `npm run build` succeeds.
+- Make sure `pnpm build` succeeds.
 - Be patient and kind in review — this is a small, friendly project.
 
 ## Ideas for new roulette modes

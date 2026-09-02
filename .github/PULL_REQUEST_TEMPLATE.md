@@ -23,7 +23,7 @@ Closes #
 
 ## How was this tested?
 
-- [ ] `npm run build` succeeds
+- [ ] `pnpm build` succeeds
 - [ ] Tested manually in **demo mode** (`/roulette?demo=1`)
 - [ ] Tested manually in **real mode** (signed in with a token) — if applicable
 

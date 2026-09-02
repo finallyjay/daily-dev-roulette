@@ -48,7 +48,7 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Browser, OS, and whether it was local (`npm run dev`) or deployed.
+      description: Browser, OS, and whether it was local (`pnpm dev`) or deployed.
       placeholder: Chrome 124 on macOS, deployed on Vercel
     validations:
       required: false
