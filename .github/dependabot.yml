@@ -14,8 +14,8 @@ updates:
     labels:
       - "dependencies"
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps-dev"
+      prefix: "chore"
+      include: "scope"
 
   # GitHub Actions used in workflows (none yet, but future-proof).
   - package-ecosystem: "github-actions"
@@ -30,4 +30,5 @@ updates:
       - "dependencies"
       - "github-actions"
     commit-message:
-      prefix: "ci"
+      prefix: "chore"
+      include: "scope"
