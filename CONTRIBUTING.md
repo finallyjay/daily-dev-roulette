@@ -6,7 +6,7 @@ hackathon hack, and it's built to grow — the long-term idea is a hub of
 
 ## Code of Conduct
 
-This project follows the [Contributor Covenant](./CODE_OF_CONDUCT.md). By
+This project follows the [Contributor Covenant](https://github.com/finallyjay/.github/blob/main/CODE_OF_CONDUCT.md). By
 participating, you're expected to uphold it. Report unacceptable behavior to
 **finallyjay@gmail.com**.
 
@@ -56,7 +56,7 @@ every pull request via GitHub Actions, and must pass before a PR can be merged.
 
 The daily.dev token is sensitive. Never log it, never expose it to client JS,
 and keep all token handling inside the server-side `src/lib/` and `src/pages/api/`
-code. If you find a vulnerability, please follow [SECURITY.md](./SECURITY.md)
+code. If you find a vulnerability, please follow [SECURITY.md](https://github.com/finallyjay/daily-dev-roulette/security/policy)
 instead of opening a public issue.
 
 ## Pull requests
