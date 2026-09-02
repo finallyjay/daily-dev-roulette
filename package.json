@@ -29,5 +29,6 @@
   },
   "overrides": {
     "path-to-regexp": "^6.3.0"
-  }
+  },
+  "packageManager": "pnpm@11.20.0"
 }
