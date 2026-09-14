@@ -7,7 +7,7 @@
 //   DAILY_TOKEN=xxx node spike/spike.mjs --delete ID  # DANGER: really deletes bookmark ID
 //
 // Token comes from the env var so it never lands in shell history files or git.
-// Generate one at daily.dev > Settings > API (requires Plus).
+// Generate one at daily.dev > Settings > API (no Plus subscription needed).
 
 const BASE = "https://api.daily.dev/public/v1";
 const token = process.env.DAILY_TOKEN;

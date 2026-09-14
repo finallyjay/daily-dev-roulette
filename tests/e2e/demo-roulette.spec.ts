@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // The demo runs fully client-side on a fixed pile of 12 mock bookmarks
-// (see src/lib/mock.ts), so no token, network, or Plus account is needed.
+// (see src/lib/mock.ts), so no token, network, or daily.dev account is needed.
 const MOCK_COUNT = 12;
 
 test.describe("demo roulette", () => {

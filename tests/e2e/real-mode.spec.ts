@@ -12,7 +12,7 @@ import { test, expect, type Page } from "@playwright/test";
 // from the one Playwright's page/context runs in, so page.route() (a
 // browser-network hook) cannot intercept that server-side fetch, and there's
 // no test-mode override for it (see .env.example: no env vars are read).
-// Signing in for real would require a live daily.dev Plus token, which we
+// Signing in for real would require a live daily.dev API token, which we
 // don't have and don't want in CI (no real network in e2e).
 //
 // So instead of faking a whole sign-in, each test below patches just the

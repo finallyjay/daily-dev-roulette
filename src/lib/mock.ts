@@ -1,6 +1,6 @@
 import type { Bookmark } from "./daily";
 
-// Self-contained fake bookmark pile for demo / no-Plus play.
+// Self-contained fake bookmark pile for demo / no-account play.
 // Mock mode runs entirely client-side: deletes just mutate local state,
 // so the roulette works anywhere with no token and no API calls.
 export const MOCK_BOOKMARKS: Bookmark[] = [
