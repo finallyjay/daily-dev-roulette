@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const ok = await validateToken(token);
   if (!ok) {
-    return json({ error: "Token rejected by daily.dev. Check it's valid and you have Plus." }, 401);
+    return json({ error: "Token rejected by daily.dev. Check it's valid and not expired." }, 401);
   }
 
   setSession(cookies, token);

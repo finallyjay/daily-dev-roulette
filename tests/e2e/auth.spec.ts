@@ -33,7 +33,7 @@ test.describe("sign-in", () => {
       if (route.request().method() !== "POST") return route.continue();
       await route.fulfill({
         status: 401,
-        json: { error: "Token rejected by daily.dev. Check it's valid and you have Plus." },
+        json: { error: "Token rejected by daily.dev. Check it's valid and not expired." },
       });
     });
 
@@ -44,7 +44,7 @@ test.describe("sign-in", () => {
 
     const error = page.locator("#login-error");
     await expect(error).toHaveText(
-      "Token rejected by daily.dev. Check it's valid and you have Plus.",
+      "Token rejected by daily.dev. Check it's valid and not expired.",
     );
     // role="alert" aria-live="assertive" — announced without a page navigation.
     await expect(error).toHaveAttribute("aria-live", "assertive");

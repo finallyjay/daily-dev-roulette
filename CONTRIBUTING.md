@@ -21,7 +21,7 @@ pnpm dev      # http://localhost:4321
 
 No environment variables are required — **demo mode** (`/roulette?demo=1`) runs
 entirely in the browser on a fake bookmark pile, so you can develop without a
-daily.dev Plus account or token.
+daily.dev account or token.
 
 ## Project layout
 
@@ -47,7 +47,7 @@ map. In short:
      tidy by hand.)
 5. **Test your change**: `pnpm test` runs the Playwright E2E suite against the
    demo flow. Also exercise it manually with `pnpm dev` (and real mode if you
-   have Plus), and run `pnpm build` to confirm the production build passes.
+   have a daily.dev API token), and run `pnpm build` to confirm the production build passes.
 
 All of the above (`lint`, `format:check`, `build`, `test`) run automatically on
 every pull request via GitHub Actions, and must pass before a PR can be merged.
