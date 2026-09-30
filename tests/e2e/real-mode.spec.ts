@@ -164,7 +164,9 @@ async function loadHomeWithCounterSlot(page: Page) {
       const html = await response.text();
       await route.fulfill({
         response,
-        body: html.replace("<body>", '<body><b id="bm-count" hidden></b>'),
+        // Match <body> with any attributes: the dev server can annotate it
+        // (e.g. data-astro-source-file), so a literal "<body>" is brittle.
+        body: html.replace(/<body[^>]*>/, '$&<b id="bm-count" hidden></b>'),
       });
     },
   );
