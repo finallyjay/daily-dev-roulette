@@ -54,6 +54,12 @@ async function fetchReal(): Promise<Bookmark[]> {
   return ((await res.json()).items ?? []) as Bookmark[];
 }
 
+function clearState() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {}
+}
+
 export function initRoulette(): void {
   const stage = document.getElementById("stage");
   if (!stage) return;
@@ -92,11 +98,6 @@ export function initRoulette(): void {
           total: state.total,
         }),
       );
-    } catch {}
-  }
-  function clearState() {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
     } catch {}
   }
   function loadState(): SavedState | null {
