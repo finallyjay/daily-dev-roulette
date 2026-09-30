@@ -14,8 +14,6 @@ updates:
         patterns:
           - "*"
     open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
     commit-message:
       prefix: "chore"
       include: "scope"
@@ -32,9 +30,6 @@ updates:
       github-actions:
         patterns:
           - "*"
-    labels:
-      - "dependencies"
-      - "github-actions"
     commit-message:
       prefix: "chore"
       include: "scope"
