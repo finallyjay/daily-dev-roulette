@@ -1,12 +1,16 @@
-# 🎲 daily.dev Roulette
+# <img src="public/favicon.svg" alt="" width="32" height="32" align="top" /> daily.dev Roulette
 
+[![Play it live](https://img.shields.io/website?url=https%3A%2F%2Fdaily-dev-roulette.vercel.app&label=play%20it%20live&up_message=online&logo=vercel)](https://daily-dev-roulette.vercel.app)
 [![CI](https://github.com/finallyjay/daily-dev-roulette/actions/workflows/ci.yml/badge.svg)](https://github.com/finallyjay/daily-dev-roulette/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Astro](https://img.shields.io/github/package-json/dependency-version/finallyjay/daily-dev-roulette/astro?logo=astro&color=BC52EE)](https://astro.build)
+[![Node 24](https://img.shields.io/badge/node-24.x-5FA04E?logo=nodedotjs&logoColor=white)](./package.json)
+[![Tested with Playwright](https://img.shields.io/badge/tested%20with-Playwright-2EAD33?logo=playwright&logoColor=white)](./tests/e2e)
 
 A daily.dev hackathon project. Put your daily.dev habits on the line, one spin at a time. It's built as a hub of "roulette" modes — the first (and currently only) mode is **Bookmarks Roulette**, with room to add more.
 
 <p align="center">
-  <img src="docs/home.png" alt="The hub: sign in and choose your duel" width="380" />
+  <img src="docs/home.png" alt="The hub: a WANTED poster for Bookmarks Roulette with Sign in with daily.dev and the Demo" width="380" />
   <img src="docs/roulette.png" alt="Bookmarks Roulette: spin the cylinder, then spare or shoot each bookmark" width="380" />
 </p>
 
