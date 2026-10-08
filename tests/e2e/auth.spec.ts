@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 // Sign-in (src/pages/index.astro) and the server-side session gate on
 // /roulette (src/pages/roulette.astro), both mocked/simulated with no real
@@ -12,6 +12,13 @@ import { test, expect } from "@playwright/test";
 //   Playwright context has no cookies, so the redirect is already
 //   deterministic without mocking anything.
 
+// With OAuth configured (see playwright.config.ts), the token form lives in a
+// collapsed <details> fallback.
+async function openTokenForm(page: Page) {
+  await page.goto("/");
+  await page.getByText("Rather paste an API token?").click();
+}
+
 test.describe("sign-in", () => {
   test("a successful token submit redirects home", async ({ page }) => {
     await page.route("**/api/auth", async (route) => {
@@ -19,13 +26,13 @@ test.describe("sign-in", () => {
       await route.fulfill({ json: { ok: true } });
     });
 
-    await page.goto("/");
+    await openTokenForm(page);
     await page.locator("#token").fill("fake-token-123");
     await page.locator("#signin").click();
 
     // The client does `window.location.href = "/"` on success.
     await expect(page).toHaveURL("/");
-    await expect(page.locator("#token")).toBeVisible(); // back on the (still signed-out) hub
+    await expect(page.locator("#oauth-signin")).toBeVisible(); // back on the (still signed-out) hub
   });
 
   test("a rejected token surfaces the error in the aria-live region", async ({ page }) => {
@@ -37,7 +44,7 @@ test.describe("sign-in", () => {
       });
     });
 
-    await page.goto("/");
+    await openTokenForm(page);
     await page.locator("#token").fill("fake-token-123");
     const signin = page.locator("#signin");
     await signin.click();
@@ -61,7 +68,7 @@ test.describe("sign-in", () => {
       await route.continue();
     });
 
-    await page.goto("/");
+    await openTokenForm(page);
     await page.locator("#signin").click();
 
     await expect(page.locator("#login-error")).toHaveText("Paste a token first, partner.");

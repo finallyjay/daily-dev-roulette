@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { deleteBookmark } from "../../../lib/daily";
+import { DailyApiError, deleteBookmark } from "../../../lib/daily";
 import { getToken } from "../../../lib/session";
 
 // DELETE /api/bookmarks/:id — pulls the trigger on a real bookmark.
@@ -14,6 +14,15 @@ export const DELETE: APIRoute = async ({ params, cookies }) => {
     await deleteBookmark(token, id);
     return new Response(null, { status: 204 });
   } catch (err) {
+    // OAuth users can untick `write` on daily.dev's consent screen.
+    if (err instanceof DailyApiError && err.status === 403) {
+      return new Response(
+        JSON.stringify({
+          error: "daily.dev didn't give us write access. Sign out and sign in again allowing it.",
+        }),
+        { status: 403 },
+      );
+    }
     console.error("[delete] ", err);
     return new Response(JSON.stringify({ error: "Failed to delete bookmark" }), { status: 502 });
   }

@@ -17,7 +17,7 @@ Your bookmarks pile up and rot — this forces a reckoning. One spin serves one 
 ### Two ways to play
 
 - **Demo mode** — runs entirely in the browser on a fake bookmark pile. No account, no token required. This is the headline experience and always works.
-- **Real mode** — sign in with a daily.dev API token (Settings → API, no Plus subscription needed). The token is validated server-side and stored in an httpOnly cookie; every API call is proxied through Astro server routes, so the token never touches client JS and there are no CORS issues. Deletes hit the real `DELETE /bookmarks/{id}` endpoint.
+- **Real mode** — **Sign in with daily.dev** (OAuth, authorization code + PKCE), or paste a daily.dev API token (Settings → API, no Plus subscription needed) as a fallback. Tokens are stored in httpOnly cookies and OAuth access tokens are refreshed server-side; every API call is proxied through Astro server routes, so no token ever touches client JS and there are no CORS issues. Deletes hit the real `DELETE /bookmarks/{id}` endpoint.
 
 ## Run locally
 
@@ -35,7 +35,9 @@ Targets Vercel out of the box (`@astrojs/vercel`, `output: "server"`). Push and 
 - `src/layouts/Layout.astro` — shared shell: global styles + header (avatar/name + sign out)
 - `src/pages/index.astro` — the hub: sign-in + the list of roulette modes
 - `src/pages/roulette.astro` — Bookmarks Roulette game (demo via `?demo=1`, else requires login)
-- `src/pages/api/auth.ts` — sign in (validate token → set cookie) / sign out
+- `src/pages/api/auth/index.ts` — sign in with a token (validate → set cookie) / sign out
+- `src/pages/api/auth/login.ts`, `callback.ts` — "Sign in with daily.dev" OAuth flow (`src/lib/oauth.ts`)
+- `src/middleware.ts` — refreshes expiring OAuth access tokens before each request
 - `src/pages/api/bookmarks/*` — server-side proxy: list (paginated) + delete
 - `src/lib/daily.ts` — daily.dev Public API client (server only): bookmarks + profile
 - `src/lib/auth.ts` — resolves the current user from the session cookie
@@ -44,4 +46,4 @@ Targets Vercel out of the box (`@astrojs/vercel`, `output: "server"`). Push and 
 
 ## API notes
 
-daily.dev's Public API is REST + Bearer personal tokens (no OAuth), available to any daily.dev account. Endpoints used: `GET /bookmarks/` (cursor-paginated), `DELETE /bookmarks/{id}`, `GET /profile/`. Other resources exist (feeds, follows, tech stack) — candidates for future roulette modes. See `spike/spike.mjs` for a standalone API probe.
+daily.dev's Public API is REST + Bearer tokens (personal tokens or [OAuth app](https://docs.daily.dev/oauth-apps/) tokens), available to any daily.dev account. OAuth is optional: set `DAILY_OAUTH_CLIENT_ID` / `DAILY_OAUTH_CLIENT_SECRET` (see `.env.example`) to show the button. Endpoints used: `GET /bookmarks/` (cursor-paginated), `DELETE /bookmarks/{id}`, `GET /profile/`. Other resources exist (feeds, follows, tech stack) — candidates for future roulette modes. See `spike/spike.mjs` for a standalone API probe.

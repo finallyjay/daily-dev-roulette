@@ -26,6 +26,13 @@ export default defineConfig({
   ],
   webServer: {
     command: "node scripts/dev-server.mjs",
+    // Fake OAuth app so "Sign in with daily.dev" renders. Tests intercept the
+    // redirect to daily.dev in the browser; these never reach a real server.
+    env: {
+      ...process.env,
+      DAILY_OAUTH_CLIENT_ID: "test-client-id",
+      DAILY_OAUTH_CLIENT_SECRET: "test-client-secret",
+    } as Record<string, string>,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
