@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
-import { validateToken } from "../../lib/daily";
-import { setSession, clearSession } from "../../lib/session";
+import { validateToken } from "../../../lib/daily";
+import { oauthEnabled, revokeRefreshToken } from "../../../lib/oauth";
+import { setSession, clearSession, getRefreshToken } from "../../../lib/session";
 
 // POST { token } -> sign in with a personal token.
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -20,8 +21,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   return json({ ok: true });
 };
 
-// Sign out — clears the cookie.
+// Sign out — revokes an OAuth refresh token (if any) and clears the cookies.
 export const DELETE: APIRoute = async ({ cookies }) => {
+  const refreshToken = getRefreshToken(cookies);
+  if (refreshToken && oauthEnabled()) await revokeRefreshToken(refreshToken);
   clearSession(cookies);
   return json({ ok: true });
 };

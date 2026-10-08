@@ -10,8 +10,10 @@ test.describe("home / hub", () => {
     // The (currently only) roulette mode is advertised on the hub.
     await expect(page.getByText("Bookmarks Roulette")).toBeVisible();
 
-    // Logged-out visitors get a token sign-in panel and a demo entry point.
-    await expect(page.locator("#token")).toBeVisible();
+    // Logged-out visitors get "Sign in with daily.dev" (token form tucked
+    // away as a fallback) and a demo entry point.
+    await expect(page.locator("#oauth-signin")).toBeVisible();
+    await expect(page.locator("#token")).toBeHidden();
     const demo = page.getByRole("link", { name: /Demo/ });
     await expect(demo).toBeVisible();
   });

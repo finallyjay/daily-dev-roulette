@@ -1,8 +1,20 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { currentUser } from "../lib/auth";
+import { oauthEnabled } from "../lib/oauth";
 
 const profile = await currentUser(Astro.cookies);
+const oauth = oauthEnabled();
+// With OAuth on, the personal-token form tucks into a <details> as a fallback.
+const TokenWrap = oauth ? "details" : "div";
+
+// ?login=<reason> is set by /api/auth/callback when "Sign in with daily.dev" doesn't pan out.
+const LOGIN_ERRORS: Record<string, string> = {
+  denied: "You turned daily.dev down. No hard feelings, partner.",
+  failed: "Sign-in with daily.dev misfired. Give it another shot.",
+  unavailable: "Sign in with daily.dev isn't saddled up here. Use an API token instead.",
+};
+const loginError = LOGIN_ERRORS[Astro.url.searchParams.get("login") ?? ""] ?? "";
 ---
 
 <Layout title="daily.dev Roulette" profile={profile}>
@@ -15,11 +27,20 @@ const profile = await currentUser(Astro.cookies);
   {!profile && (
     <section class="panel reveal r2 mb-[1.4rem]">
       <h2>Show your papers</h2>
-      <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, no Plus subscription needed) to ride with your real bookmarks. It stays in a sealed saddlebag — a secure cookie, only for your session.</p>
-      <label for="token" class="sr-only">daily.dev API token</label>
-      <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
-      <button class="btn-primary" id="signin">Sign in</button>
-      <p class="error" id="login-error" role="alert" aria-live="assertive"></p>
+      {oauth && (
+        <>
+          <p class="card-meta">Ride with your real bookmarks. daily.dev hands us the keys, and they stay in a sealed saddlebag — a secure cookie, only for your session.</p>
+          <a href="/api/auth/login" class="btn-primary block no-underline text-center" id="oauth-signin">Sign in with daily.dev</a>
+        </>
+      )}
+      <TokenWrap class="token-form">
+        {oauth && <summary class="card-meta">Rather paste an API token?</summary>}
+        <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, no Plus subscription needed) to ride with your real bookmarks. It stays in a sealed saddlebag — a secure cookie, only for your session.</p>
+        <label for="token" class="sr-only">daily.dev API token</label>
+        <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
+        <button class={oauth ? "btn-ghost w-full" : "btn-primary"} id="signin">Sign in</button>
+      </TokenWrap>
+      <p class="error" id="login-error" role="alert" aria-live="assertive">{loginError}</p>
     </section>
   )}
 
@@ -55,6 +76,16 @@ const profile = await currentUser(Astro.cookies);
 </Layout>
 
 <script>
+  // Back from /api/auth/callback: a fresh sign-in starts with a fresh game,
+  // same as the token flow below. Drop ?login= so a reload doesn't repeat it.
+  const login = new URL(location.href).searchParams.get("login");
+  if (login) {
+    if (login === "ok") {
+      try { localStorage.removeItem("ddr_progress"); } catch {}
+    }
+    history.replaceState(null, "", "/");
+  }
+
   const signin = document.getElementById("signin");
   signin?.addEventListener("click", async () => {
     const token = (document.getElementById("token") as HTMLInputElement).value.trim();
@@ -119,6 +150,8 @@ const profile = await currentUser(Astro.cookies);
     padding: 2px 8px; border-radius: 3px; transform: rotate(7deg);
     background: #f1e6c9; letter-spacing: 0.1em;
   }
+  details.token-form { margin-top: 1rem; }
+  details.token-form summary { cursor: pointer; }
   .coming {
     text-align: center; font-family: var(--font-type);
     color: var(--ink-soft); font-size: 0.8rem; margin: 1.3rem 0 0;

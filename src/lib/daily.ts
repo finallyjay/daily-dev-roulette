@@ -21,6 +21,16 @@ export type Profile = {
   isPlus?: boolean;
 };
 
+/** Non-2xx answer from daily.dev; `status` lets routes tell a 403 from an outage. */
+export class DailyApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}` };
 }
@@ -122,6 +132,9 @@ export async function deleteBookmark(token: string, id: string): Promise<void> {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`daily.dev DELETE /bookmarks/${id} -> ${res.status} ${res.statusText} ${body}`);
+    throw new DailyApiError(
+      `daily.dev DELETE /bookmarks/${id} -> ${res.status} ${res.statusText} ${body}`,
+      res.status,
+    );
   }
 }
