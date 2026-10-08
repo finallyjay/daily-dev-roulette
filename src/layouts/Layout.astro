@@ -2,6 +2,7 @@
 import SpeedInsights from "@vercel/speed-insights/astro";
 import "../styles/global.css";
 import type { Profile } from "../lib/daily";
+import { oauthEnabled } from "../lib/oauth";
 
 interface Props {
   title?: string;
@@ -84,6 +85,10 @@ const ogImage = new URL("/og-image.png", origin).href;
             <span class="uname">{profile.name || profile.username || "you"}</span>
             <button class="signout" id="signout-btn">Sign out</button>
           </>
+        ) : oauthEnabled() ? (
+          <a href="/api/auth/login" class="header-signin" id="header-signin">
+            <img src="/brand/daily-dev-signin-white-rounded.svg" alt="Sign in with daily.dev" width="205" height="40" />
+          </a>
         ) : (
           <span class="muted">not signed in</span>
         )}
