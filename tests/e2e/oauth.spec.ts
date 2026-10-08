@@ -41,6 +41,16 @@ test.describe("sign in with daily.dev", () => {
     expect(authorize.toString()).not.toContain("test-client-secret");
   });
 
+  test("signed-out pages offer the official sign-in button in the header", async ({ page }) => {
+    for (const path of ["/", "/roulette?demo=1"]) {
+      await page.goto(path);
+      const signin = page.locator("#header-signin");
+      await expect(signin).toBeVisible();
+      await expect(signin).toHaveAttribute("href", "/api/auth/login");
+      await expect(signin.getByRole("img", { name: "Sign in with daily.dev" })).toBeVisible();
+    }
+  });
+
   test("a callback with a forged state is rejected", async ({ page }) => {
     // Starts a real sign-in, so a pending-state cookie exists, then forges the reply.
     await page.request.get("/api/auth/login", { maxRedirects: 0 });

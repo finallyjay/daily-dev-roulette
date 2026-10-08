@@ -15,64 +15,95 @@ const LOGIN_ERRORS: Record<string, string> = {
   unavailable: "Sign in with daily.dev isn't saddled up here. Use an API token instead.",
 };
 const loginError = LOGIN_ERRORS[Astro.url.searchParams.get("login") ?? ""] ?? "";
+const name = profile?.name || profile?.username || "stranger";
 ---
 
 <Layout title="daily.dev Roulette" profile={profile}>
   <div class="reveal r1 text-center">
     <p class="kicker">★ ★ ★ &nbsp; THE TERRITORY OF &nbsp; ★ ★ ★</p>
     <h1>daily.dev Roulette</h1>
-    <p class="tagline">Round up your forgotten bookmarks. Read 'em or bury 'em.</p>
+    <p class="tagline">
+      {profile ? <>Well howdy, {name}. The outlaws are restless.</> : "Round up your forgotten bookmarks. Read 'em or bury 'em."}
+    </p>
   </div>
 
-  {!profile && (
-    <section class="panel reveal r2 mb-[1.4rem]">
-      <h2>Show your papers</h2>
-      {oauth && (
-        <>
-          <p class="card-meta">Ride with your real bookmarks. daily.dev hands us the keys, and they stay in a sealed saddlebag — a secure cookie, only for your session.</p>
-          <a href="/api/auth/login" class="btn-primary block no-underline text-center" id="oauth-signin">Sign in with daily.dev</a>
-        </>
-      )}
-      <TokenWrap class="token-form">
-        {oauth && <summary class="card-meta">Rather paste an API token?</summary>}
-        <p class="card-meta">Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>, no Plus subscription needed) to ride with your real bookmarks. It stays in a sealed saddlebag — a secure cookie, only for your session.</p>
-        <label for="token" class="sr-only">daily.dev API token</label>
-        <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
-        <button class={oauth ? "btn-ghost w-full" : "btn-primary"} id="signin">Sign in</button>
-      </TokenWrap>
-      <p class="error" id="login-error" role="alert" aria-live="assertive">{loginError}</p>
-    </section>
-  )}
+  <!-- The hub is a bounty poster nailed to the wall: same WANTED language as
+       the verdict card in the game, so the home already shows how it plays. -->
+  <section class="notice reveal r2" aria-labelledby="notice-title">
+    <span class="nail tl" aria-hidden="true"></span>
+    <span class="nail tr" aria-hidden="true"></span>
+    <span class="nail bl" aria-hidden="true"></span>
+    <span class="nail br" aria-hidden="true"></span>
 
-  {profile && (
-    <p class="tagline reveal r2 -mt-4">Well howdy, {profile.name || profile.username || "stranger"}.</p>
-  )}
+    <p class="notice-top" id="notice-title">WANTED</p>
+    <p class="notice-rule">— dead or read —</p>
 
-  <section class="panel reveal r3">
-    <h2 class="mb-4">Choose your duel</h2>
-
-    <div class="mode-card">
-      <span class="mode-stamp">NEW</span>
-      <div class="mode-head">
-        <span class="mode-icon">🔖</span>
-        <div>
-          <div class="mode-title">Bookmarks Roulette</div>
-          <div class="card-meta">Spin a bookmark. Pardon it, or shoot it dead.</div>
-        </div>
-      </div>
-      {profile && (
-        <p class="card-meta mt-[0.6rem]">There's <b id="bm-count">…</b> in the chamber, partner.</p>
-      )}
-      <div class="row mt-[0.9rem]">
-        {profile && (
-          <a href="/roulette" class="btn-primary flex-1 no-underline text-center">🤠 Draw</a>
-        )}
-        <a href="/roulette?demo=1" class="btn-ghost w-full flex-1 no-underline text-center">▶ Demo</a>
-      </div>
+    <div class="mini-cylinder" aria-hidden="true">
+      <span class="h" style="--i:0"></span><span class="h" style="--i:1"></span>
+      <span class="h" style="--i:2"></span><span class="h" style="--i:3"></span>
+      <span class="h" style="--i:4"></span><span class="h" style="--i:5"></span>
+      <span class="hub"></span>
     </div>
 
-    <p class="coming">— more duels comin' to town —</p>
+    {profile ? (
+      <>
+        <p class="bounty">
+          <b id="bm-count">…</b>
+          <span>outlaws loose in your bookmarks</span>
+        </p>
+        <a href="/roulette" class="btn-primary draw no-underline text-center">🤠 Draw</a>
+        <p class="alt">
+          or <a href="/roulette?demo=1">▶ warm up in the Demo</a> — fake bookmarks, nothing deleted
+        </p>
+      </>
+    ) : (
+      <>
+        <h2 class="mode-name">Bookmarks Roulette</h2>
+        <p class="pitch">
+          Every link you saved "for later" and never opened. Spin the cylinder and one comes up:{" "}
+          <b>spare it</b> and go read it, or <b>pull the trigger</b> and it's gone from daily.dev. For good.
+        </p>
+
+        <ol class="steps">
+          <li><span>I</span>Spin</li>
+          <li><span>II</span>Face the outlaw</li>
+          <li><span>III</span>Read 'em or bury 'em</li>
+        </ol>
+
+        <div class="ledger">
+          {oauth && (
+            <>
+              <p class="ledger-label">Sign the sheriff's ledger</p>
+              <a href="/api/auth/login" class="official-signin" id="oauth-signin">
+                <img src="/brand/daily-dev-signin-black-rounded.svg" alt="Sign in with daily.dev" width="205" height="40" />
+              </a>
+              <p class="fine">No Plus needed. Your keys ride in a secure cookie for this session; we keep nothing.</p>
+            </>
+          )}
+          <TokenWrap class="token-form">
+            {oauth && <summary class="fine">Rather paste an API token?</summary>}
+            <p class="fine">
+              Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>).
+              It stays in a secure cookie, only for your session.
+            </p>
+            <label for="token" class="sr-only">daily.dev API token</label>
+            <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
+            <button class={oauth ? "btn-ghost w-full" : "btn-primary"} id="signin">Sign in</button>
+          </TokenWrap>
+          <p class="error" id="login-error" role="alert" aria-live="assertive">{loginError}</p>
+        </div>
+
+        <a href="/roulette?demo=1" class="demo-link">
+          <span class="demo-title">▶ Try the Demo</span>
+          <span class="demo-sub">No account. Fake bookmarks. Real gunsmoke.</span>
+        </a>
+      </>
+    )}
+
+    <span class="stamp" aria-hidden="true">{profile ? "OPEN SEASON" : "REWARD: A CLEAN BACKLOG"}</span>
   </section>
+
+  <p class="coming reveal r3">— more duels comin' to town —</p>
 </Layout>
 
 <script>
@@ -132,38 +163,261 @@ const loginError = LOGIN_ERRORS[Astro.url.searchParams.get("login") ?? ""] ?? ""
     color: var(--brass);
     margin: 0 0 0.4rem;
   }
-  .mode-card {
+
+  /* ---- the bounty poster ---- */
+  .notice {
     position: relative;
-    border: 2px solid var(--ink);
+    width: 100%;
+    max-width: 480px;
+    margin-top: 0.4rem;
+    padding: 2.2rem 2rem 2.4rem;
+    text-align: center;
+    color: var(--ink);
+    /* aged paper: warm center, foxed edges, a faint fold line */
+    background:
+      linear-gradient(90deg, transparent 49.6%, rgba(116, 96, 63, 0.10) 50%, transparent 50.4%),
+      radial-gradient(ellipse at 50% 35%, var(--paper-hi) 0%, var(--paper) 62%, #d8c69c 100%);
+    border-radius: 2px;
+    box-shadow:
+      0 0 0 1px var(--paper-edge),
+      inset 0 0 40px rgba(116, 82, 30, 0.25),
+      0 24px 50px rgba(0, 0, 0, 0.6);
+    transform: rotate(-0.8deg);
+  }
+  .notice::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 3px double rgba(116, 96, 63, 0.55);
+    pointer-events: none;
+  }
+  .nail {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #e8e2d4, #7a766c 55%, #2c2a26);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.55);
+  }
+  .nail.tl { top: 16px; left: 16px; }
+  .nail.tr { top: 16px; right: 16px; }
+  .nail.bl { bottom: 16px; left: 16px; }
+  .nail.br { bottom: 16px; right: 16px; }
+
+  .notice-top {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 9vw, 3.6rem);
+    letter-spacing: 0.14em;
+    line-height: 1;
+    margin: 0.2rem 0 0;
+    color: var(--ink);
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .notice-rule {
+    font-family: var(--font-type);
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--blood);
+    margin: 0.35rem 0 1.1rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 3px double var(--ink-soft);
+  }
+
+  /* the revolver cylinder from the game, small and idling */
+  .mini-cylinder {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #5a5a60 0%, #34343a 38%, #1c1c20 72%, #0d0d10 100%);
+    border: 4px solid;
+    border-color: var(--brass-hi) var(--brass) #6e4f17 var(--brass);
+    box-shadow: 0 0 0 2px #0c0c0e, 0 8px 18px rgba(0, 0, 0, 0.45);
+    animation: idle 14s linear infinite;
+  }
+  .notice:hover .mini-cylinder { animation-duration: 1.6s; }
+  .mini-cylinder .h {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 17px;
+    height: 17px;
+    margin: -8.5px 0 0 -8.5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #1a1a1d, #050506);
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.9);
+    transform: rotate(calc(var(--i) * 60deg)) translateY(-28px);
+  }
+  .mini-cylinder .h:first-child {
+    background: radial-gradient(circle at 40% 35%, #ffe9a8, #bb8a32 58%, #6e4f17);
+  }
+  .mini-cylinder .hub {
+    position: absolute;
+    inset: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #d8d8de, #6a6a70 60%, #2a2a2e);
+  }
+  @keyframes idle { to { transform: rotate(360deg); } }
+
+  .mode-name {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    margin: 0 0 0.5rem;
+    color: var(--ink);
+  }
+  .pitch {
+    font-size: 1.02rem;
+    line-height: 1.55;
+    margin: 0 auto 1.1rem;
+    max-width: 34ch;
+    color: #3d2f1f;
+  }
+  .pitch b { color: var(--blood); }
+
+  .steps {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0 0 1.4rem;
+    font-family: var(--font-type);
+    font-size: 0.74rem;
+    color: var(--ink-soft);
+  }
+  .steps li {
+    flex: 1;
+    padding: 0.5rem 0.3rem;
+    border: 1px dashed rgba(116, 96, 63, 0.6);
+  }
+  .steps span {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--rust);
+  }
+
+  /* sign-in block: the official daily.dev button, framed as a ledger line */
+  .ledger {
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(116, 96, 63, 0.4);
+  }
+  .ledger-label {
+    font-family: var(--font-type);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.6rem;
+  }
+  .official-signin {
+    display: inline-block;
+    border-radius: 6px;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+    transition: transform 0.08s ease, box-shadow 0.15s ease;
+  }
+  .official-signin img { display: block; height: 46px; width: auto; }
+  .official-signin:hover { transform: translateY(-1px); box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35); }
+  .official-signin:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
+  .official-signin:focus-visible { outline: 3px solid var(--rust); outline-offset: 3px; }
+
+  .fine {
+    font-family: var(--font-type);
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin: 0.7rem auto 0;
+    max-width: 38ch;
+  }
+  .fine a { color: var(--rust); font-weight: 700; }
+  details.token-form summary { cursor: pointer; display: inline-block; }
+  details.token-form[open] { text-align: left; }
+  details.token-form[open] summary { display: block; text-align: center; }
+  .token-form input { margin-top: 0.7rem; }
+  .token-form button { margin-top: 0.6rem; }
+
+  .demo-link {
+    display: block;
+    margin-top: 1.2rem;
+    padding: 0.85rem 1rem;
+    text-decoration: none;
+    color: var(--ink);
+    border: 2px solid var(--ink-soft);
     border-radius: 3px;
-    padding: 1.2rem;
-    background: repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0 8px, transparent 8px 16px), #f1e6c9;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+    background: rgba(255, 255, 255, 0.18);
+    transition: background 0.15s ease, transform 0.08s ease;
   }
-  .mode-head { display: flex; gap: 0.9rem; align-items: center; }
-  .mode-icon { font-size: 2rem; }
-  .mode-title { font-family: var(--font-display); font-size: 1.25rem; color: var(--ink); }
-  .mode-stamp {
-    position: absolute; top: -12px; right: 14px;
-    font-family: var(--font-display); font-size: 0.7rem;
-    color: var(--blood); border: 2px solid var(--blood);
-    padding: 2px 8px; border-radius: 3px; transform: rotate(7deg);
-    background: #f1e6c9; letter-spacing: 0.1em;
+  .demo-link:hover { background: rgba(255, 255, 255, 0.35); transform: translateY(-1px); }
+  .demo-title { display: block; font-family: var(--font-display); font-size: 1.05rem; color: var(--ink); }
+  .demo-sub { display: block; font-family: var(--font-type); font-size: 0.74rem; color: var(--ink-soft); margin-top: 0.15rem; }
+
+  /* signed-in: the bounty count is the headline */
+  .bounty { margin: 0 0 1.2rem; }
+  .bounty b {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--blood);
   }
-  details.token-form { margin-top: 1rem; }
-  details.token-form summary { cursor: pointer; }
+  .bounty span {
+    font-family: var(--font-type);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .draw { display: block; font-size: 1.2rem; padding: 0.9rem 1.1rem; }
+  .alt { font-family: var(--font-type); font-size: 0.78rem; color: var(--ink-soft); margin: 0.9rem 0 0; }
+  .alt a { color: var(--rust); font-weight: 700; }
+
+  .stamp {
+    position: absolute;
+    right: -12px;
+    top: 8.6rem;
+    transform: rotate(9deg);
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--blood);
+    border: 2px solid var(--blood);
+    padding: 3px 9px;
+    border-radius: 3px;
+    background: var(--paper-hi);
+    opacity: 0.92;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
   .coming {
-    text-align: center; font-family: var(--font-type);
-    color: var(--ink-soft); font-size: 0.8rem; margin: 1.3rem 0 0;
+    text-align: center;
+    font-family: var(--font-type);
+    color: #8c7a5a;
+    font-size: 0.8rem;
+    margin: 1.8rem 0 0;
   }
 
   /* staggered entrance */
-  .reveal { animation: rise 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+  .reveal { animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
   .r1 { animation-delay: 0.05s; }
   .r2 { animation-delay: 0.2s; }
   .r3 { animation-delay: 0.35s; }
   @keyframes rise {
     from { opacity: 0; transform: translateY(22px); }
-    to { opacity: 1; transform: translateY(0); }
+    to { opacity: 1; }
+  }
+  .notice.reveal { animation-name: nail-up; }
+  @keyframes nail-up {
+    from { opacity: 0; transform: translateY(22px) rotate(-3deg); }
+    to { opacity: 1; transform: rotate(-0.8deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mini-cylinder, .reveal { animation: none; }
   }
 </style>

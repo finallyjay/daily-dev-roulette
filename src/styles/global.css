@@ -342,6 +342,28 @@
     font-family: var(--font-display);
     font-size: 0.95rem;
   }
+  /* official "Sign in with daily.dev", white variant (daily.dev's rule for
+     dark backgrounds) at its 30px minimum height */
+  .header-signin {
+    display: block;
+    border-radius: 6px;
+    transition:
+      transform 0.08s ease,
+      box-shadow 0.15s ease;
+  }
+  .header-signin img {
+    display: block;
+    height: 30px;
+    width: auto;
+  }
+  .header-signin:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 2px var(--brass);
+  }
+  .header-signin:focus-visible {
+    outline: 2px solid var(--brass-hi);
+    outline-offset: 3px;
+  }
   .signout {
     background: transparent;
     color: #c9b896;
