@@ -1,5 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
-import { refreshTokens } from "./lib/oauth";
+import { refreshTokens, TokenError } from "./lib/oauth";
 import { accessTokenExpiring, clearSession, getRefreshToken, setOAuthSession } from "./lib/session";
 
 // OAuth access tokens are short-lived. Refreshing here, once per request and
@@ -12,9 +12,10 @@ export const onRequest = defineMiddleware(async ({ cookies }, next) => {
     try {
       setOAuthSession(cookies, await refreshTokens(refreshToken));
     } catch (err) {
-      // Expired or revoked refresh token: the docs say to restart sign-in.
       console.error("[auth:refresh] ", err);
-      clearSession(cookies);
+      // Expired or revoked refresh token: the docs say to restart sign-in. On a
+      // network blip or 5xx keep the session and try again next request.
+      if (err instanceof TokenError && err.invalidGrant) clearSession(cookies);
     }
   }
   return next();

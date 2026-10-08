@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 4321;
+// Not the default 4321, so a running `pnpm dev` (without the fake OAuth app
+// below) is never reused for the test run.
+const PORT = 4329;
 const baseURL = `http://localhost:${PORT}`;
 
 // E2E tests run against the Astro dev server. `astro preview` is not available
@@ -30,6 +32,7 @@ export default defineConfig({
     // redirect to daily.dev in the browser; these never reach a real server.
     env: {
       ...process.env,
+      PORT: String(PORT),
       DAILY_OAUTH_CLIENT_ID: "test-client-id",
       DAILY_OAUTH_CLIENT_SECRET: "test-client-secret",
     } as Record<string, string>,

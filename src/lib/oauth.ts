@@ -19,6 +19,20 @@ export type TokenSet = {
   scope?: string;
 };
 
+/** Non-2xx from the token endpoint; 400/401 mean the grant itself is dead. */
+export class TokenError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+
+  get invalidGrant(): boolean {
+    return this.status === 400 || this.status === 401;
+  }
+}
+
 export function oauthEnabled(): boolean {
   return Boolean(DAILY_OAUTH_CLIENT_ID && DAILY_OAUTH_CLIENT_SECRET);
 }
@@ -84,7 +98,10 @@ async function tokenRequest(params: Record<string, string>): Promise<TokenSet> {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`daily.dev token ${params.grant_type} -> ${res.status} ${body}`);
+    throw new TokenError(
+      `daily.dev token ${params.grant_type} -> ${res.status} ${body}`,
+      res.status,
+    );
   }
   return (await res.json()) as TokenSet;
 }
@@ -106,7 +123,7 @@ export function refreshTokens(refreshToken: string) {
 
 /** Best-effort revoke on sign-out; the cookies are cleared regardless. */
 export async function revokeRefreshToken(refreshToken: string): Promise<void> {
-  await fetch(REVOKE_URL, {
+  const res = await fetch(REVOKE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -115,5 +132,9 @@ export async function revokeRefreshToken(refreshToken: string): Promise<void> {
       client_id: DAILY_OAUTH_CLIENT_ID!,
       client_secret: DAILY_OAUTH_CLIENT_SECRET!,
     }),
-  }).catch(() => {});
+  }).catch((err) => {
+    console.error("[auth:revoke] ", err);
+    return undefined;
+  });
+  if (res && !res.ok) console.error(`[auth:revoke] daily.dev -> ${res.status}`);
 }

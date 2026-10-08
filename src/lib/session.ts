@@ -20,10 +20,14 @@ const SESSION_OPTS = {
 
 export function setSession(cookies: AstroCookies, token: string) {
   cookies.set(COOKIE, token, SESSION_OPTS);
+  // A personal token replaces any OAuth session, or middleware would later
+  // "refresh" it back to the old account.
+  cookies.delete(REFRESH_COOKIE, { path: "/" });
+  cookies.delete(EXPIRES_COOKIE, { path: "/" });
 }
 
 export function setOAuthSession(cookies: AstroCookies, tokens: TokenSet) {
-  setSession(cookies, tokens.access_token);
+  cookies.set(COOKIE, tokens.access_token, SESSION_OPTS);
   cookies.set(EXPIRES_COOKIE, String(Date.now() + tokens.expires_in * 1000), SESSION_OPTS);
   if (tokens.refresh_token) cookies.set(REFRESH_COOKIE, tokens.refresh_token, SESSION_OPTS);
 }

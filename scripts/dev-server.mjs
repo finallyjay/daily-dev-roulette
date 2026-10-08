@@ -7,4 +7,4 @@
 // which always runs in the foreground and reads astro.config.* like the CLI.
 import { dev } from "astro";
 
-await dev({});
+await dev({ server: { port: Number(process.env.PORT) || 4321 } });

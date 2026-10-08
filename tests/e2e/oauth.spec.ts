@@ -16,6 +16,7 @@ const AUTHORIZE = "https://api.daily.dev/auth/oauth2/authorize";
 test.describe("sign in with daily.dev", () => {
   test("redirects to daily.dev's consent screen with PKCE and the public API resource", async ({
     page,
+    baseURL,
   }) => {
     await page.goto("/");
     await expect(page.locator("#oauth-signin")).toHaveAttribute("href", "/api/auth/login");
@@ -28,7 +29,7 @@ test.describe("sign in with daily.dev", () => {
     const params = authorize.searchParams;
     expect(params.get("response_type")).toBe("code");
     expect(params.get("client_id")).toBe("test-client-id");
-    expect(params.get("redirect_uri")).toBe("http://localhost:4321/api/auth/callback");
+    expect(params.get("redirect_uri")).toBe(new URL("/api/auth/callback", baseURL).toString());
     expect(params.get("resource")).toBe("https://api.daily.dev/public/v1");
     expect(params.get("scope")?.split(" ")).toEqual(
       expect.arrayContaining(["read", "write", "offline_access"]),
