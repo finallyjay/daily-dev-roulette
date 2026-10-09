@@ -35,6 +35,10 @@ Never ask the user to paste a token into the chat if the MCP server or an enviro
 
 `{id}` is the bookmark's `id` field from the list response (it is the post id).
 
+Send `DELETE` without a body and without a `Content-Type: application/json` header: the API answers `400` ("Body cannot be empty") if that header is set on an empty request. Deleting is idempotent, so deleting a bookmark that is already gone also returns `204`.
+
+**Link to show:** many bookmarks are posts written or shared on daily.dev itself and come with an empty `url`. Use `url` when it is set, otherwise `commentsPermalink` (always present, it opens the post on daily.dev).
+
 ## How to play
 
 ### 1. Load the pile
@@ -59,7 +63,7 @@ alias: <source.name>
 <title>
 <summary, one or two sentences, if present>
 <readTime> min read · bookmarked <bookmarkedAt as a date>
-<url>
+<url, or commentsPermalink if url is empty>
 ```
 
 Add one short, dry, Western-flavoured line about it if something stands out (bookmarked years ago, a 30-minute read, an outdated year in the title). Keep it kind; the joke is on the backlog, not the user.
@@ -68,7 +72,7 @@ Then ask: **Spare it, or pull the trigger?**
 
 ### 4. The verdict
 
-- **Spare it:** keep it. Suggest opening the `url` now. Count it as pardoned.
+- **Spare it:** keep it. Suggest opening the link now (`url`, or `commentsPermalink` if `url` is empty). Count it as pardoned.
 - **Pull the trigger:** call `DELETE /bookmarks/{id}`. On `204`, confirm with a short epitaph and count it as buried.
 - **Skip / not sure:** treat it as spared.
 
@@ -80,6 +84,6 @@ Show the running tally (`🪦 buried · 📖 pardoned · in chamber`) and offer 
 
 - **401:** the token is missing, expired, or revoked. Ask the user to reconnect the MCP server or create a new token under daily.dev Settings → API.
 - **403 with `insufficient_scope`:** the user did not grant `write`. Explain that sparing still works, but pulling the trigger needs write access, and how to reconnect with it.
-- **404 on delete:** the bookmark is already gone. Count it as buried and move on.
+- **404 on delete:** the API could not find it, so there is nothing left to remove. Count it as buried and move on.
 - **429:** rate limited. Wait a little and retry once; if it fails again, pause the game and tell the user.
 - Anything else: show the status code, do not retry deletes blindly, and treat the bookmark as spared.
