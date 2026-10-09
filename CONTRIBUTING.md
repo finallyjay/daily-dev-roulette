@@ -46,8 +46,9 @@ map. In short:
      (oxfmt is still alpha and does not format `.astro` files yet, so keep those
      tidy by hand.)
 5. **Test your change**: `pnpm test` runs the Playwright E2E suite against the
-   demo flow. Also exercise it manually with `pnpm dev` (and real mode if you
-   have a daily.dev API token), and run `pnpm build` to confirm the production build passes.
+   demo flow. Also exercise it manually with `pnpm dev` (and real mode by
+   pasting a daily.dev API token, which only `pnpm dev` accepts), and run
+   `pnpm build` to confirm the production build passes.
 
 All of the above (`lint`, `format:check`, `build`, `test`) run automatically on
 every pull request via GitHub Actions, and must pass before a PR can be merged.
