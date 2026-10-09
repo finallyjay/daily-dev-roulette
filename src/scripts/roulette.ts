@@ -284,7 +284,8 @@ export function initRoulette(): void {
 
   function read() {
     if (!state.current) return;
-    window.open(state.current.url, "_blank", "noopener");
+    const link = state.current.url || state.current.commentsPermalink;
+    if (link) window.open(link, "_blank", "noopener");
     removeCurrent();
     state.survived++;
     showToast("📖 Spared! Off you go to read it.", "spare");
