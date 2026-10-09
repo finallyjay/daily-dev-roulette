@@ -95,6 +95,76 @@ test.describe("real mode: loading bookmarks", () => {
   });
 });
 
+// GET /api/bookmarks?cursor=… -> one page, keyed by cursor ("" = newest).
+async function servePages(page: Page, pages: Record<string, object>, seen: string[]) {
+  await page.route(
+    (url) => url.pathname === "/api/bookmarks",
+    async (route) => {
+      const cursor = new URL(route.request().url()).searchParams.get("cursor") ?? "";
+      seen.push(cursor);
+      const body = pages[cursor];
+      if (!body) return route.fulfill({ status: 502, json: { error: "Failed to load bookmarks" } });
+      await route.fulfill({ json: body });
+    },
+  );
+}
+
+async function spareCurrent(page: Page) {
+  await page.locator("#spin").click();
+  await expect(page.locator("#verdict")).toBeVisible({ timeout: 8000 });
+  await page.getByRole("button", { name: /Spare it/ }).click();
+}
+
+test.describe("real mode: one page at a time", () => {
+  test.beforeEach(async ({ page }) => {
+    page.context().on("page", (p) => p.close().catch(() => {}));
+  });
+
+  test("finishing a page rides on to the next, older one, then wraps around", async ({ page }) => {
+    const seen: string[] = [];
+    await servePages(
+      page,
+      {
+        "": { items: [REAL_BOOKMARKS[0]], cursor: "c2", hasNextPage: true },
+        c2: { items: [REAL_BOOKMARKS[1]], cursor: null, hasNextPage: false },
+      },
+      seen,
+    );
+    await loadRouletteAsReal(page);
+
+    await spareCurrent(page);
+    const restart = page.locator("#restart");
+    await expect(restart).toHaveText("Ride on to older bookmarks");
+    // A later visit resumes at the older page, not at the newest.
+    expect(await page.evaluate(() => localStorage.getItem("ddr_cursor"))).toBe("c2");
+
+    await restart.click();
+    await expect(page.locator("#stat-chamber")).toHaveText("1");
+    await spareCurrent(page);
+    await expect(restart).toHaveText("Reload & ride again");
+    expect(await page.evaluate(() => localStorage.getItem("ddr_cursor"))).toBeNull();
+
+    await restart.click();
+    await expect(page.locator("#spin")).toBeVisible();
+    expect(seen).toEqual(["", "c2", ""]);
+  });
+
+  test("a stale saved cursor falls back to the newest page", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("ddr_cursor", "stale"));
+    const seen: string[] = [];
+    await servePages(
+      page,
+      { "": { items: REAL_BOOKMARKS, cursor: "c2", hasNextPage: true } },
+      seen,
+    );
+
+    await loadRouletteAsReal(page);
+
+    await expect(page.locator("#stat-chamber")).toHaveText(String(REAL_BOOKMARKS.length));
+    expect(seen).toEqual(["stale", ""]);
+  });
+});
+
 test.describe("real mode: sparing", () => {
   test("a bookmark with no url opens its daily.dev post instead", async ({ page }) => {
     // Shares, freeform posts and collections come back with url: "".

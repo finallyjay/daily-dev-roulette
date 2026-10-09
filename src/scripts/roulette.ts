@@ -20,6 +20,8 @@ type GameState = {
 type SavedState = Pick<GameState, "mode" | "chamber" | "current" | "killed" | "survived" | "total">;
 
 const STORAGE_KEY = "ddr_progress";
+// Real mode only: the daily.dev cursor of the page being played (see loadRealPage).
+const CURSOR_KEY = "ddr_cursor";
 const CHAMBERS = 6; // 1 live round in 6 — classic odds
 
 const $ = (id: string): HTMLElement => document.getElementById(id)!;
@@ -48,10 +50,29 @@ function tick(ctx: AudioContext, t: number, freq: number, gain: number) {
   o.stop(t + 0.06);
 }
 
-async function fetchReal(): Promise<Bookmark[]> {
-  const res = await fetch("/api/bookmarks");
+type BookmarkPage = { items: Bookmark[]; cursor?: string; hasNextPage: boolean };
+
+async function fetchReal(cursor?: string): Promise<BookmarkPage> {
+  const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
+  const res = await fetch(`/api/bookmarks${query}`);
   if (!res.ok) throw new Error("Could not load your bookmarks. Try signing in again.");
-  return ((await res.json()).items ?? []) as Bookmark[];
+  const body = await res.json();
+  return { items: body.items ?? [], cursor: body.cursor, hasNextPage: !!body.hasNextPage };
+}
+
+function readCursor(): string | undefined {
+  try {
+    return localStorage.getItem(CURSOR_KEY) || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function writeCursor(cursor: string | undefined) {
+  try {
+    if (cursor) localStorage.setItem(CURSOR_KEY, cursor);
+    else localStorage.removeItem(CURSOR_KEY);
+  } catch {}
 }
 
 function clearState() {
@@ -217,6 +238,27 @@ export function initRoulette(): void {
     o.stop(t + 0.3);
   }
 
+  // Real mode plays one page (50 bookmarks, one daily.dev request) at a time.
+  // The API only lists newest first, so finishing a page moves on to the next,
+  // older one, and a later visit resumes there: over time the forgotten
+  // bookmarks come up too. Only that opaque cursor is stored, never bookmarks.
+  let pageCursor = readCursor();
+  let nextCursor: string | undefined;
+
+  async function loadRealPage() {
+    let page: BookmarkPage;
+    try {
+      page = await fetchReal(pageCursor);
+    } catch (e) {
+      if (!pageCursor) throw e;
+      pageCursor = undefined; // a stale cursor: start over from the newest
+      page = await fetchReal();
+    }
+    nextCursor = page.hasNextPage ? page.cursor : undefined;
+    writeCursor(pageCursor);
+    startGame(page.items);
+  }
+
   function startGame(bookmarks: Bookmark[]) {
     state.chamber = bookmarks.slice();
     state.killed = 0;
@@ -376,6 +418,12 @@ export function initRoulette(): void {
 
   function gameOver() {
     clearState();
+    if (state.mode === "real") {
+      // Past the last page, wrap around to the newest bookmarks.
+      pageCursor = nextCursor;
+      writeCursor(pageCursor);
+      $("restart").textContent = pageCursor ? "Ride on to older bookmarks" : "Reload & ride again";
+    }
     hide($("verdict"));
     hide($("spin"));
     $("over-total").textContent = String(state.total);
@@ -405,7 +453,7 @@ export function initRoulette(): void {
     hide($("over"));
     show($("loading"));
     try {
-      startGame(await fetchReal());
+      await loadRealPage();
     } catch (e: any) {
       $("loading").textContent = "⚠️ " + String(e.message || e);
       return;
@@ -425,7 +473,7 @@ export function initRoulette(): void {
       startGame(MOCK_BOOKMARKS);
     } else {
       try {
-        startGame(await fetchReal());
+        await loadRealPage();
       } catch (e: any) {
         $("loading").textContent = "⚠️ " + String(e.message || e);
         return;
