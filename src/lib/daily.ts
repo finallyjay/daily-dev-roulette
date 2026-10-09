@@ -5,7 +5,10 @@ const BASE = "https://api.daily.dev/public/v1";
 export type Bookmark = {
   id: string;
   title: string;
+  // Empty for posts that live on daily.dev itself (shares, freeform posts,
+  // collections); commentsPermalink is always set and opens the post there.
   url: string;
+  commentsPermalink?: string;
   image?: string;
   summary?: string;
   source?: { name?: string; image?: string };

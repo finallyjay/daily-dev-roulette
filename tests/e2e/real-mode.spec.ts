@@ -95,6 +95,39 @@ test.describe("real mode: loading bookmarks", () => {
   });
 });
 
+test.describe("real mode: sparing", () => {
+  test("a bookmark with no url opens its daily.dev post instead", async ({ page }) => {
+    // Shares, freeform posts and collections come back with url: "".
+    const permalink = "https://daily.dev/posts/a-shared-post-r3";
+    await page.route("**/api/bookmarks", async (route) => {
+      if (route.request().method() !== "GET") return route.continue();
+      await route.fulfill({
+        json: {
+          items: [{ ...REAL_BOOKMARKS[0], id: "r3", url: "", commentsPermalink: permalink }],
+        },
+      });
+    });
+    await page.addInitScript(() => {
+      const opened: string[] = [];
+      (window as unknown as { opened: string[] }).opened = opened;
+      window.open = (url) => {
+        opened.push(String(url));
+        return null;
+      };
+    });
+
+    await loadRouletteAsReal(page);
+    await page.locator("#spin").click();
+    await expect(page.locator("#verdict")).toBeVisible({ timeout: 8000 });
+    await page.getByRole("button", { name: /Spare it/ }).click();
+
+    await expect(page.locator("#stat-survived")).toHaveText("1");
+    expect(await page.evaluate(() => (window as unknown as { opened: string[] }).opened)).toEqual([
+      permalink,
+    ]);
+  });
+});
+
 test.describe("real mode: pulling the trigger", () => {
   test.beforeEach(async ({ page }) => {
     page.context().on("page", (p) => p.close().catch(() => {}));
