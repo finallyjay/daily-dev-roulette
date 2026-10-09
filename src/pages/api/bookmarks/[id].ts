@@ -7,8 +7,12 @@ export const DELETE: APIRoute = async ({ params, cookies }) => {
   const token = getToken(cookies);
   if (!token) return new Response(JSON.stringify({ error: "Not signed in" }), { status: 401 });
 
+  // daily.dev post ids are short slugs; anything else (e.g. a decoded
+  // `lists/<id>`) is refused rather than forwarded to another endpoint.
   const id = params.id;
-  if (!id) return new Response(JSON.stringify({ error: "Missing id" }), { status: 400 });
+  if (!id || !/^[\w-]+$/.test(id)) {
+    return new Response(JSON.stringify({ error: "Invalid bookmark id" }), { status: 400 });
+  }
 
   try {
     await deleteBookmark(token, id);

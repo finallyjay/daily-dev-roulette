@@ -111,7 +111,8 @@ export async function listBookmarks(
 
 /** Pulls the trigger: permanently removes a bookmark. 204 on success. */
 export async function deleteBookmark(token: string, id: string): Promise<void> {
-  const res = await fetch(`${BASE}/bookmarks/${id}`, {
+  // Encoded so an id can never reach another endpoint (e.g. `lists%2F<id>`).
+  const res = await fetch(`${BASE}/bookmarks/${encodeURIComponent(id)}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });
