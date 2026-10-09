@@ -1,0 +1,85 @@
+---
+name: bookmarks-roulette
+description: Play Bookmarks Roulette with the user's daily.dev bookmarks. Draw one forgotten bookmark at random and let the user decide whether to spare it (read it) or pull the trigger (remove it from their bookmarks). Use when the user wants to clean up, triage, or "roulette" their daily.dev bookmarks or reading backlog.
+---
+
+# Bookmarks Roulette
+
+A Wild West duel against the user's daily.dev bookmark backlog. You draw one bookmark at random, present it like a WANTED poster, and the user passes the verdict:
+
+- **Spare it** — keep the bookmark (and ideally go read it now).
+- **Pull the trigger** — remove it from their daily.dev bookmarks, for good.
+
+This is the agent version of the daily.dev Roulette web app (https://daily-dev-roulette.vercel.app). Keep the tone playful, but never let the joke get in the way of the rules below.
+
+## Ground rules
+
+1. **Never remove a bookmark without an explicit verdict for that exact bookmark.** "Pull the trigger", "shoot", "bury it", "delete" or similar, said about the bookmark currently on the table. Anything ambiguous means spare.
+2. **One bookmark at a time.** No bulk deletes, no "shoot them all", even if asked. Offer to keep spinning instead.
+3. **There is no undo.** Removing a bookmark does not delete the article, but it is gone from the user's bookmarks. Say so once, before the first trigger pull of the session.
+4. Do not invent bookmarks. Everything you show comes from the API response.
+
+## Access
+
+Prefer the **daily.dev MCP server** (`https://api.daily.dev/mcp`) if it is connected. Otherwise call the Public API directly with the user's personal access token:
+
+- Base URL: `https://api.daily.dev/public/v1`
+- Header: `Authorization: Bearer <token>`
+
+Never ask the user to paste a token into the chat if the MCP server or an environment variable is available. Never print, log, or store the token.
+
+| Step             | MCP tool            | HTTP                                       |
+| ---------------- | ------------------- | ------------------------------------------ |
+| Load the pile    | `getBookmarks`      | `GET /bookmarks/?limit=50&cursor=<cursor>` |
+| Pull the trigger | `deleteBookmarksId` | `DELETE /bookmarks/{id}` → `204`           |
+
+`{id}` is the bookmark's `id` field from the list response (it is the post id).
+
+## How to play
+
+### 1. Load the pile
+
+Fetch bookmarks with `limit=50`. While `pagination.hasNextPage` is true, fetch the next page with `pagination.cursor`. Stop after **10 pages (500 bookmarks)** to stay well within rate limits, and mention it if the pile was bigger.
+
+If the user only wants bookmarks they never opened, add `unreadOnly=true`.
+
+If the pile is empty, congratulate them: the town is clean. End the game.
+
+### 2. Spin
+
+Pick one bookmark uniformly at random from the bookmarks not yet drawn this session. Never draw the same one twice.
+
+### 3. Face the outlaw
+
+Show the bookmark as a WANTED poster. Use only the fields you have:
+
+```
+🤠 WANTED — DEAD OR READ
+alias: <source.name>
+<title>
+<summary, one or two sentences, if present>
+<readTime> min read · bookmarked <bookmarkedAt as a date>
+<url>
+```
+
+Add one short, dry, Western-flavoured line about it if something stands out (bookmarked years ago, a 30-minute read, an outdated year in the title). Keep it kind; the joke is on the backlog, not the user.
+
+Then ask: **Spare it, or pull the trigger?**
+
+### 4. The verdict
+
+- **Spare it:** keep it. Suggest opening the `url` now. Count it as pardoned.
+- **Pull the trigger:** call `DELETE /bookmarks/{id}`. On `204`, confirm with a short epitaph and count it as buried.
+- **Skip / not sure:** treat it as spared.
+
+### 5. Keep riding
+
+Show the running tally (`🪦 buried · 📖 pardoned · in chamber`) and offer another spin. Stop when the user says so or the pile is empty, then give the final tally.
+
+## Errors
+
+- **401:** the token is missing, expired, or revoked. Ask the user to reconnect the MCP server or create a new token under daily.dev Settings → API.
+- **403 with `insufficient_scope`:** the user did not grant `write`. Explain that sparing still works, but pulling the trigger needs write access, and how to reconnect with it.
+- **404 on delete:** the bookmark is already gone. Count it as buried and move on.
+- **429:** rate limited. Wait a little and retry once; if it fails again, pause the game and tell the user.
+- Anything else: show the status code, do not retry deletes blindly, and treat the bookmark as spared.
