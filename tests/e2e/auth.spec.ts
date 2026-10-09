@@ -12,8 +12,9 @@ import { test, expect, type Page } from "@playwright/test";
 //   Playwright context has no cookies, so the redirect is already
 //   deterministic without mocking anything.
 
-// With OAuth configured (see playwright.config.ts), the token form lives in a
-// collapsed <details> fallback.
+// The token form only exists under the dev server (the deployed app is
+// OAuth-only), which is what Playwright runs. With OAuth configured (see
+// playwright.config.ts), it lives in a collapsed <details>.
 async function openTokenForm(page: Page) {
   await page.goto("/");
   await page.getByText("Rather paste an API token?").click();
