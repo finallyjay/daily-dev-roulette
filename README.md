@@ -21,7 +21,9 @@ Your bookmarks pile up and rot — this forces a reckoning. One spin serves one 
 ### Two ways to play
 
 - **Demo mode** — runs entirely in the browser on a fake bookmark pile. No account, no token required. This is the headline experience and always works.
-- **Real mode** — **Sign in with daily.dev** (OAuth, authorization code + PKCE), or paste a daily.dev API token (Settings → API, no Plus subscription needed) as a fallback. Tokens are stored in httpOnly cookies and OAuth access tokens are refreshed server-side; every API call is proxied through Astro server routes, so no token ever touches client JS and there are no CORS issues. Bookmarks load 50 at a time (one API request), moving on to older ones as you clear each batch, to go easy on daily.dev's monthly API quota. Deletes hit the real `DELETE /bookmarks/{id}` endpoint.
+- **Real mode** — **Sign in with daily.dev** (OAuth, authorization code + PKCE; no Plus subscription needed). Tokens are stored in httpOnly cookies and access tokens are refreshed server-side; every API call is proxied through Astro server routes, so no token ever touches client JS and there are no CORS issues. Bookmarks load 50 at a time (one API request), moving on to older ones as you clear each batch, to go easy on daily.dev's monthly API quota. Deletes hit the real `DELETE /bookmarks/{id}` endpoint.
+
+The deployed app never asks for a personal API token. Under `pnpm dev` only, a "paste an API token" form is available, since daily.dev's OAuth can't redirect to localhost.
 
 ## Run locally
 
@@ -50,4 +52,4 @@ Targets Vercel out of the box (`@astrojs/vercel`, `output: "server"`). Push and 
 
 ## API notes
 
-daily.dev's Public API is REST + Bearer tokens (personal tokens or [OAuth app](https://docs.daily.dev/oauth-apps/) tokens), available to any daily.dev account. OAuth is optional: set `DAILY_OAUTH_CLIENT_ID` / `DAILY_OAUTH_CLIENT_SECRET` (see `.env.example`) to show the button. Endpoints used: `GET /bookmarks/` (cursor-paginated), `DELETE /bookmarks/{id}`, `GET /profile/`. Other resources exist (feeds, follows, tech stack) — candidates for future roulette modes. See `spike/spike.mjs` for a standalone API probe.
+daily.dev's Public API is REST + Bearer tokens (personal tokens or [OAuth app](https://docs.daily.dev/oauth-apps/) tokens), available to any daily.dev account. Set `DAILY_OAUTH_CLIENT_ID` / `DAILY_OAUTH_CLIENT_SECRET` (see `.env.example`) to enable sign-in; without them a deployment only offers the demo. Endpoints used: `GET /bookmarks/` (cursor-paginated), `DELETE /bookmarks/{id}`, `GET /profile/`. Other resources exist (feeds, follows, tech stack) — candidates for future roulette modes. See `spike/spike.mjs` for a standalone API probe.

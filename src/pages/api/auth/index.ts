@@ -3,8 +3,10 @@ import { validateToken } from "../../../lib/daily";
 import { oauthEnabled, revokeRefreshToken } from "../../../lib/oauth";
 import { setSession, clearSession, getRefreshToken } from "../../../lib/session";
 
-// POST { token } -> sign in with a personal token.
+// POST { token } -> sign in with a personal token. Local dev only: OAuth can't
+// complete on localhost, and the deployed app never accepts personal tokens.
 export const POST: APIRoute = async ({ request, cookies }) => {
+  if (!import.meta.env.DEV) return json({ error: "Not found" }, 404);
   const body = await request.json().catch(() => ({}));
   const token: string | undefined = body.token?.trim();
 

@@ -5,14 +5,17 @@ import { oauthEnabled } from "../lib/oauth";
 
 const profile = await currentUser(Astro.cookies);
 const oauth = oauthEnabled();
-// With OAuth on, the personal-token form tucks into a <details> as a fallback.
+// Personal tokens are a local-dev convenience only (OAuth can't complete on
+// localhost): the deployed app never asks for one, so they never pass through
+// a hosted server. With OAuth on, the form tucks into a <details>.
+const tokenSignin = import.meta.env.DEV;
 const TokenWrap = oauth ? "details" : "div";
 
 // ?login=<reason> is set by /api/auth/callback when "Sign in with daily.dev" doesn't pan out.
 const LOGIN_ERRORS: Record<string, string> = {
   denied: "You turned daily.dev down. No hard feelings, partner.",
   failed: "Sign-in with daily.dev misfired. Give it another shot.",
-  unavailable: "Sign in with daily.dev isn't saddled up here. Use an API token instead.",
+  unavailable: "Sign in with daily.dev isn't saddled up here. Try the Demo instead.",
 };
 const loginError = LOGIN_ERRORS[Astro.url.searchParams.get("login") ?? ""] ?? "";
 const name = profile?.name || profile?.username || "stranger";
@@ -80,16 +83,18 @@ const name = profile?.name || profile?.username || "stranger";
               <p class="fine">No Plus needed. Your keys ride in a secure cookie for this session; we keep nothing.</p>
             </>
           )}
-          <TokenWrap class="token-form">
-            {oauth && <summary class="fine">Rather paste an API token?</summary>}
-            <p class="fine">
-              Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>).
-              It stays in a secure cookie, only for your session.
-            </p>
-            <label for="token" class="sr-only">daily.dev API token</label>
-            <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
-            <button class={oauth ? "btn-ghost w-full" : "btn-primary"} id="signin">Sign in</button>
-          </TokenWrap>
+          {tokenSignin && (
+            <TokenWrap class="token-form">
+              {oauth && <summary class="fine">Rather paste an API token?</summary>}
+              <p class="fine">
+                Paste your daily.dev API token (<a href="https://app.daily.dev/settings/api" target="_blank" rel="noopener">Settings → API</a>).
+                It stays in a secure cookie, only for your session.
+              </p>
+              <label for="token" class="sr-only">daily.dev API token</label>
+              <input type="password" id="token" placeholder="daily.dev API token" autocomplete="off" />
+              <button class={oauth ? "btn-ghost w-full" : "btn-primary"} id="signin">Sign in</button>
+            </TokenWrap>
+          )}
           <p class="error" id="login-error" role="alert" aria-live="assertive">{loginError}</p>
         </div>
 
