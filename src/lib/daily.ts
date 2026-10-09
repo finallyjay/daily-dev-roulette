@@ -64,7 +64,7 @@ type BookmarksPage = {
 
 /**
  * Cheap chamber tally for the homepage. Fetches a single page instead of
- * paginating the whole pile (which `listAllBookmarks` would do just to count).
+ * paginating the whole pile just to count it.
  * Returns an exact count when the API exposes a total or the pile fits in one
  * page; otherwise `exact` is false and the count is the first-page size, which
  * the UI renders as "N+".
@@ -107,24 +107,6 @@ export async function listBookmarks(
     cursor: body.pagination?.cursor ?? undefined,
     hasNextPage: body.pagination?.hasNextPage ?? false,
   };
-}
-
-/** Follows the cursor to pull every bookmark (capped to avoid runaway). */
-export async function listAllBookmarks(
-  token: string,
-  opts: { unreadOnly?: boolean; maxItems?: number } = {},
-): Promise<Bookmark[]> {
-  const cap = opts.maxItems ?? 1000;
-  const all: Bookmark[] = [];
-  let cursor: string | undefined;
-
-  do {
-    const page = await listBookmarks(token, { unreadOnly: opts.unreadOnly, limit: 50, cursor });
-    all.push(...page.items);
-    cursor = page.hasNextPage ? page.cursor : undefined;
-  } while (cursor && all.length < cap);
-
-  return all.slice(0, cap);
 }
 
 /** Pulls the trigger: permanently removes a bookmark. 204 on success. */

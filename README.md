@@ -21,7 +21,7 @@ Your bookmarks pile up and rot — this forces a reckoning. One spin serves one 
 ### Two ways to play
 
 - **Demo mode** — runs entirely in the browser on a fake bookmark pile. No account, no token required. This is the headline experience and always works.
-- **Real mode** — **Sign in with daily.dev** (OAuth, authorization code + PKCE), or paste a daily.dev API token (Settings → API, no Plus subscription needed) as a fallback. Tokens are stored in httpOnly cookies and OAuth access tokens are refreshed server-side; every API call is proxied through Astro server routes, so no token ever touches client JS and there are no CORS issues. Deletes hit the real `DELETE /bookmarks/{id}` endpoint.
+- **Real mode** — **Sign in with daily.dev** (OAuth, authorization code + PKCE), or paste a daily.dev API token (Settings → API, no Plus subscription needed) as a fallback. Tokens are stored in httpOnly cookies and OAuth access tokens are refreshed server-side; every API call is proxied through Astro server routes, so no token ever touches client JS and there are no CORS issues. Bookmarks load 50 at a time (one API request), moving on to older ones as you clear each batch, to go easy on daily.dev's monthly API quota. Deletes hit the real `DELETE /bookmarks/{id}` endpoint.
 
 ## Run locally
 
