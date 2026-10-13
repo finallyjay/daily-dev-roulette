@@ -15,16 +15,16 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@astrojs/vercel": "^11.0.11",
+    "@astrojs/vercel": "^11.0.13",
     "@vercel/speed-insights": "^2.0.0",
-    "astro": "^7.3.5"
+    "astro": "^7.3.8"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/vite": "^4.3.3",
-    "oxfmt": "^0.71.0",
-    "oxlint": "^1.86.0",
-    "playwright": "^1.63.0",
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.87.0",
+    "playwright": "^1.64.0",
     "tailwindcss": "^4.3.3"
   },
   "engines": {
