@@ -4,7 +4,7 @@
 [![CI](https://github.com/finallyjay/daily-dev-roulette/actions/workflows/ci.yml/badge.svg)](https://github.com/finallyjay/daily-dev-roulette/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Astro](https://img.shields.io/github/package-json/dependency-version/finallyjay/daily-dev-roulette/astro?logo=astro&color=BC52EE)](https://astro.build)
-[![Node 24](https://img.shields.io/badge/node-24.x-5FA04E?logo=nodedotjs&logoColor=white)](./package.json)
+[![Node 26](https://img.shields.io/badge/node-26.x-5FA04E?logo=nodedotjs&logoColor=white)](./package.json)
 [![Tested with Playwright](https://img.shields.io/badge/tested%20with-Playwright-2EAD33?logo=playwright&logoColor=white)](./tests/e2e)
 
 A daily.dev hackathon project. Put your daily.dev habits on the line, one spin at a time. It's built as a hub of "roulette" modes — the first (and currently only) mode is **Bookmarks Roulette**, with room to add more.
