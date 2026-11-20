@@ -8,5 +8,11 @@ export const GET: APIRoute = async ({ url, request, cookies, redirect }) => {
 
   const { state, verifier, challenge } = await newAuthRequest();
   setOAuthRequest(cookies, { state, verifier });
-  return redirect(authorizeUrl({ redirectUri: redirectUri(url, request.headers.get("x-forwarded-host")), state, challenge }));
+  return redirect(
+    authorizeUrl({
+      redirectUri: redirectUri(url, request.headers.get("x-forwarded-host")),
+      state,
+      challenge,
+    }),
+  );
 };
