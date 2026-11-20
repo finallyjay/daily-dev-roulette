@@ -10,6 +10,10 @@ daily.dev Roulette
 
 https://daily-dev-roulette.finallyjay.dev
 
+## Repository URL
+
+https://github.com/finallyjay/daily-dev-roulette
+
 ## Short description
 
 Your bookmarks pile up and rot. Spin the cylinder and one forgotten bookmark comes up: spare it and go read it, or pull the trigger and it's deleted from daily.dev for good. Try the demo first, no account needed.
