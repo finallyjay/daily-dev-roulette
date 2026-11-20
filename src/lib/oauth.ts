@@ -42,18 +42,35 @@ export function isExpectedIssuer(iss: string | null): boolean {
   return iss === null || iss === ISSUER;
 }
 
-/** Callback URL registered on the OAuth app. Must match one of them exactly. */
-export function redirectUri(requestUrl: URL): string {
+// Production hosts the app answers on. `site` (astro.config.mjs) is the
+// canonical one; the original vercel.app domain still serves the app, so a
+// sign-in started there must come back there (the state/PKCE cookie is
+// host-only). Both callback URLs are registered on the OAuth app.
+const PRODUCTION_HOSTS = new Set([
+  new URL(import.meta.env.SITE).host,
+  "daily-dev-roulette.vercel.app",
+]);
+
+/**
+ * Callback URL registered on the OAuth app. Must match one of them exactly.
+ * `forwardedHost` is the request's `x-forwarded-host`, set by Vercel's proxy.
+ */
+export function redirectUri(requestUrl: URL, forwardedHost?: string | null): string {
   // Behind Vercel's proxy the request host can read as localhost, so deployed
-  // builds use a known origin; dev uses whatever origin the server is on.
+  // builds pick a known origin; dev uses whatever origin the server is on.
   // Previews use the branch alias (stable per branch, so it can be registered);
   // sign in from that URL, not the per-deployment one, or the state cookie won't match.
   const branchUrl = process.env.VERCEL_ENV === "preview" && process.env.VERCEL_BRANCH_URL;
-  const origin = branchUrl
-    ? `https://${branchUrl}`
-    : import.meta.env.PROD
-      ? import.meta.env.SITE
-      : requestUrl.origin;
+  if (branchUrl) return callbackOn(`https://${branchUrl}`);
+  if (!import.meta.env.PROD) return callbackOn(requestUrl.origin);
+
+  // Only ever a host from the allowlist, so a spoofed header can't redirect
+  // the code anywhere else; anything unknown falls back to the canonical site.
+  const host = [forwardedHost, requestUrl.host].find((h) => h && PRODUCTION_HOSTS.has(h));
+  return callbackOn(host ? `https://${host}` : import.meta.env.SITE);
+}
+
+function callbackOn(origin: string): string {
   return new URL("/api/auth/callback", origin).toString();
 }
 
