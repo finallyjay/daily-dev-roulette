@@ -1,6 +1,6 @@
 # <img src="public/favicon.svg" alt="" width="32" height="32" align="top" /> daily.dev Roulette
 
-[![Play it live](https://img.shields.io/website?url=https%3A%2F%2Fdaily-dev-roulette.vercel.app&label=play%20it%20live&up_message=online&logo=vercel)](https://daily-dev-roulette.vercel.app)
+[![Play it live](https://img.shields.io/website?url=https%3A%2F%2Fdaily-dev-roulette.finallyjay.dev&label=play%20it%20live&up_message=online&logo=vercel)](https://daily-dev-roulette.finallyjay.dev)
 [![CI](https://github.com/finallyjay/daily-dev-roulette/actions/workflows/ci.yml/badge.svg)](https://github.com/finallyjay/daily-dev-roulette/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Astro](https://img.shields.io/github/package-json/dependency-version/finallyjay/daily-dev-roulette/astro?logo=astro&color=BC52EE)](https://astro.build)

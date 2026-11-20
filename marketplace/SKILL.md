@@ -10,7 +10,7 @@ A Wild West duel against the user's daily.dev bookmark backlog. You draw one boo
 - **Spare it** — keep the bookmark (and ideally go read it now).
 - **Pull the trigger** — remove it from their daily.dev bookmarks, for good.
 
-This is the agent version of the daily.dev Roulette web app (https://daily-dev-roulette.vercel.app). Keep the tone playful, but never let the joke get in the way of the rules below.
+This is the agent version of the daily.dev Roulette web app (https://daily-dev-roulette.finallyjay.dev). Keep the tone playful, but never let the joke get in the way of the rules below.
 
 ## Ground rules
 

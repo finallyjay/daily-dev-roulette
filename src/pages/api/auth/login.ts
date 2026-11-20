@@ -3,10 +3,16 @@ import { authorizeUrl, newAuthRequest, oauthEnabled, redirectUri } from "../../.
 import { setOAuthRequest } from "../../../lib/session";
 
 // GET /api/auth/login -> off to daily.dev's consent screen.
-export const GET: APIRoute = async ({ url, cookies, redirect }) => {
+export const GET: APIRoute = async ({ url, request, cookies, redirect }) => {
   if (!oauthEnabled()) return redirect("/?login=unavailable");
 
   const { state, verifier, challenge } = await newAuthRequest();
   setOAuthRequest(cookies, { state, verifier });
-  return redirect(authorizeUrl({ redirectUri: redirectUri(url), state, challenge }));
+  return redirect(
+    authorizeUrl({
+      redirectUri: redirectUri(url, request.headers.get("x-forwarded-host")),
+      state,
+      challenge,
+    }),
+  );
 };

@@ -8,7 +8,7 @@ daily.dev Roulette
 
 ## Link
 
-https://daily-dev-roulette.vercel.app
+https://daily-dev-roulette.finallyjay.dev
 
 ## Short description
 

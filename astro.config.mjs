@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   // Canonical production URL — used as a fallback when building absolute OG/
   // canonical URLs (behind Vercel's proxy the request host can read as localhost).
-  site: "https://daily-dev-roulette.vercel.app",
+  site: "https://daily-dev-roulette.finallyjay.dev",
   output: "server",
   // "Sign in with daily.dev" OAuth app credentials. Optional: when unset, the
   // OAuth button is hidden and only the personal-token sign-in is offered.

@@ -4,7 +4,7 @@ import { setOAuthSession, takeOAuthRequest } from "../../../lib/session";
 
 // GET /api/auth/callback?code&state — daily.dev sends the user back here.
 // Every failure lands on the hub with a `login` reason the page turns into a message.
-export const GET: APIRoute = async ({ url, cookies, redirect }) => {
+export const GET: APIRoute = async ({ url, request, cookies, redirect }) => {
   if (!oauthEnabled()) return redirect("/?login=unavailable");
 
   const pending = takeOAuthRequest(cookies);
@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
     const tokens = await exchangeCode({
       code,
       verifier: pending.verifier,
-      redirectUri: redirectUri(url),
+      redirectUri: redirectUri(url, request.headers.get("x-forwarded-host")),
     });
     setOAuthSession(cookies, tokens);
   } catch (err) {
